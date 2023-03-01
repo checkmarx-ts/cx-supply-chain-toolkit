@@ -1,2 +1,2 @@
-sandbox/sca-resolver-bin/*
-sandbox/build.sh
+**/sandbox/sca-resolver-bin/*.gz
+**/sandbox/build.sh
