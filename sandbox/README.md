@@ -57,8 +57,7 @@ or incompatible stage is specified, the container build will fail.
 The container can be invoked like SCAResolver from the command line.  Parameters controlling the scan are passed to the container. It is also possible to customize 
 the `Configuration.yml` with static parameters that don't need to change with each invoke.
 
-One exception is that the `-s` or `--scan-path` is defined in the container entrypoint as `/sandbox/code`.  The `/sandbox/code` directory is one of several directories
-that are intended to be mapped to a volume at runtime:
+To properly interface with the container, some directories are intended to be mapped to a volume at runtime:
 
 |Directory|Required|Comments|
 |-|-|-|
@@ -81,8 +80,6 @@ As an example, the `offline` [scan mode example](https://checkmarx.com/resource/
 docker run -it --rm -v .:/sandbox/code -v ./resolver-output:/sandbox/output -v ./resolver-logs:/sandbox/scalogs <your container tag> offline -n MyApp -r /sandbox/output/results.json
 
 ```
-
-
 
 # How to Build
 
