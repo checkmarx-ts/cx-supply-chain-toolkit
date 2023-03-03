@@ -1,7 +1,7 @@
-LogsDirectory: /scalogs
-ResolverResultPath: /output/sca-results.json
+LogsDirectory: /sandbox/scalogs
 
 # You can place custom configuration parameters below this comment block.  Modifying the 
 # configuration parameters above this line may cause SCAResolver to malfunction when running
 # in the context of this container.
-
+ResolverResultPath: /sandbox/output/sca-results.json
+SastResultPath: /sandbox/output/sast-ep-results.json
