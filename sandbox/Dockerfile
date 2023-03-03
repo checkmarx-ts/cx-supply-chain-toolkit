@@ -3,19 +3,23 @@ ARG BASE=alpine:latest
 FROM ${BASE} AS base-config
 
 ARG CONFIG_DIR=default-config
+ARG GROUP_ID=1000
+ARG USER_ID=1000
 
 RUN mkdir -p /sandbox/scalogs && \
     chmod -R 730 /sandbox/scalogs && \
     mkdir -p /sandbox/code && \
     chmod -R 750 /sandbox/code && \
     mkdir -p /sandbox/output && \
-    chmod -R 730 /sandbox/output 
+    chmod -R 730 /sandbox/output && \
+    mkdir -p /sandbox/resolver/cache && \
+    chmod -R 760 /sandbox/resolver/cache
 
 COPY cacerts/*.pem /cacerts/
 
-COPY scripts/entrypoint.sh /
+COPY scripts/*.sh /
 
-RUN chmod 755 /entrypoint.sh && \
+RUN chmod 755 /*.sh && \
     ln -s /sandbox/resolver/ScaResolver /usr/local/bin/ScaResolver && \
     ln -s /sandbox/resolver/ImageResolverCli /usr/local/bin/ImageResolverCli
 
@@ -51,18 +55,21 @@ RUN yum install -y tar gzip && \
 
 FROM base-musl AS resolver-alpine
 
-RUN apk add -q libstdc++ && \
-    addgroup -g 4096 sca && \
-    addgroup root sca && \
-    adduser -D -G sca -s /sbin/nologin -g resolver resolver && \
+RUN apk add -q libstdc++ bash && \
+    getent group ${GROUP_ID} > /dev/null && \
+    [[ $? -ne 0 ]] && { addgroup -g ${GROUP_ID} sca ; TARGET_GROUP=sca ; } || TARGET_GROUP=$(getent group ${GROUP_ID} | cut -d ':' -f1) && \
+    addgroup root $TARGET_GROUP && \
+    getent passwd ${USER_ID} > /dev/null && \
+    [[ $? -ne 0 ]] && {  adduser -D -G $TARGET_GROUP -s /sbin/nologin -g resolver resolver ; TARGET_NAME=resolver ; } || TARGET_NAME=$(getent passwd ${USER_ID} | cut -d ':' -f1) && \
     for cert in $(ls /cacerts); do cat /cacerts/$cert >> /etc/ssl/certs/ca-certificates.crt; done && \
-    chown -R root:sca /sandbox/output /sandbox/code /sandbox/scalogs /sandbox/resolver
+    chown -R root:$TARGET_GROUP /sandbox/output /sandbox/code /sandbox/scalogs /sandbox/resolver
 
-USER resolver
+USER  ${USER_ID}:${GROUP_ID}
+
 
 FROM base-linux AS resolver-debian
 
-RUN addgroup sca && \
+RUN addgroup --gid ${GROUP_ID} sca && \
     adduser root sca && \
     adduser --disabled-password --no-create-home --ingroup sca --disabled-login resolver && \
     chmod -R 750 /sandbox/resolver && \
@@ -71,13 +78,13 @@ RUN addgroup sca && \
     for cert in $(ls /cacerts); do cat /cacerts/$cert >> /etc/ssl/certs/ca-certificates.crt; done && \
     chown -R root:sca /sandbox/output /sandbox/code /sandbox/scalogs /sandbox/resolver
 
-USER resolver
+# USER resolver
 
 FROM base-linux AS resolver-redhat
 
 RUN [[ $(command -v microdnf > /dev/null 2>&1) -eq 0 ]] && microdnf install -y --nodocs shadow-utils || : && \
     [[ $(command -v microdnf > /dev/null 2>&1) -eq 0 ]] && microdnf clean || : && \
-    groupadd sca && \
+    groupadd --gid ${GROUP_ID} sca && \
     adduser --no-create-home -G sca resolver && \
     usermod -G sca root && \
     chmod -R 750 /sandbox/resolver && \
@@ -85,14 +92,14 @@ RUN [[ $(command -v microdnf > /dev/null 2>&1) -eq 0 ]] && microdnf install -y -
     update-ca-trust extract && \
     chown -R root:sca /sandbox/output /sandbox/code /sandbox/scalogs /sandbox/resolver
 
-USER resolver
+# USER resolver
 
 FROM base-linux-yum-tar AS resolver-amazon
 
 RUN yum install -y shadow-utils && \
     yum clean all && \
     rm -rf /var/cache/yum && \
-    groupadd sca && \
+    groupadd --gid ${GROUP_ID} sca && \
     adduser --no-create-home -G sca resolver && \
     usermod -G sca root && \
     chmod -R 750 /sandbox/resolver && \
@@ -100,4 +107,4 @@ RUN yum install -y shadow-utils && \
     update-ca-trust extract && \
     chown -R root:sca /sandbox/output /sandbox/code /sandbox/scalogs /sandbox/resolver
 
-USER resolver
+# USER resolver

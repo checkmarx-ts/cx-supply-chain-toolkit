@@ -1,7 +1,11 @@
 LogsDirectory: /sandbox/scalogs
 
+# These values are for North America, you may need to change these for other regions
+AuthenticationServerUrl: https://platform.checkmarx.net
+ServerUrl: https://api-sca.checkmarx.net
+ScaAppUrl: https://sca.checkmarx.net
+
 # You can place custom configuration parameters below this comment block.  Modifying the 
 # configuration parameters above this line may cause SCAResolver to malfunction when running
 # in the context of this container.
-ResolverResultPath: /sandbox/output/sca-results.json
-SastResultPath: /sandbox/output/sast-ep-results.json
+
