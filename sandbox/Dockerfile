@@ -13,7 +13,7 @@ RUN mkdir -p /sandbox/scalogs && \
 
 COPY cacerts/*.pem /cacerts/
 
-COPY entrypoint.sh /
+COPY scripts/entrypoint.sh /
 
 RUN chmod 755 /entrypoint.sh && \
     ln -s /sandbox/resolver/ScaResolver /usr/local/bin/ScaResolver && \
