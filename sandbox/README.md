@@ -64,7 +64,7 @@ that are intended to be mapped to a volume at runtime:
 |-|-|-|
 |`/sandbox/scalogs`| No | Used to write SCAResolver logs. |
 |`/sandbox/code`| Yes | This is where the code should exist that needs to be scanned. |
-|`/sandbox/output`| Yes | This is the directory where SCAResolver results file `sca-results.json` and (optionally) `sast-ep-results.json` will be written.|
+|`/sandbox/output`| Yes | This is the directory where SCAResolver results files will be written.|
 
 Performing a `docker run` for an SCAResolver image passes the arguments through to SCAResolver.  You can modify the `default-config/Configuration.yml` to set default options for SCAResolver.  In the [How to Build](#how-to-build) section, a method is described to allow you to choose a non-default `Configuration.yml` at the time of build.
 
@@ -72,18 +72,34 @@ There are various ways of mapping local disk volumes to the container's director
 
 `docker run --rm -it -v /my-log-path:/sandbox/scalogs -v .:/sandbox/code -v ./sca-results:/sandbox/output my-scaresolver-tag {SCAResolver args...}`
 
+Note that options passed to SCAResolver that indicate where to place output should be provided with paths prefixed with `/sandbox/output`.  This
+is the location in the container where you have mapped a directory for output, so the written output will appear on your mapped volume.
+
+As an example, the `offline` [scan mode example](https://checkmarx.com/resource/documents/en/34965-19199-running-scans-using-checkmarx-sca-resolver.html#UUID-af718204-6dfc-2b27-439e-419b9157d364_id_RunningScansUsingCheckmarxSCAResolver-RunningaScan-OfflineMode) found in the SCAResolver documentation would be executed in a pipeline with a command similar to:
+
+```
+docker run -it --rm -v .:/sandbox/code -v ./resolver-output:/sandbox/output -v ./resolver-logs:/sandbox/scalogs <your container tag> offline -n MyApp -r /sandbox/output/results.json
+
+```
+
+
+
 # How to Build
 
 The general build pattern is:
 
 ```
-docker build -t {your tag} --build-arg BASE={tag for your build image} --build-arg CONFIG_DIR={directory for your custom configuration} --target=resolver-{compatible stage} .
+docker build -t {your tag} --build-arg BASE={tag for your build image} --build-arg CONFIG_DIR={directory for your custom configuration} --target=resolver-{compatible stage} --build-arg USER_ID={your user id} --build-arg GROUP_ID={your group id} .
 
 ```
+
 |Argument|Default|Description|
 |-|-|-|
 |`BASE`|`alpine:latest`|The name of the base image for the container build.|
 |`CONFIG_DIR`|`default-config`|The directory where image configuration files are sourced during the build.|
+|`USER_ID`|1000|The user id to use when running SCAResolver and creating directories and/or files.|
+|`GROUP_ID`|1000|The group id to use when running SCAResolver and creating directories and/or files.|
+
 
 
 ## `BASE` Build Argument
@@ -95,6 +111,25 @@ Your base image should contain all required build tooling that would be used in 
 ## `CONFIG_DIR` Build Argument
 
 The build argument `CONFIG_DIR` is optional and will default to `default-config` if not provided.  You can create your custom configuration by creating a new directory and copying the contents of `default-config` to initialize the configuration artifacts.  You can then modify the configuration artifacts to fit the configuration needed by the generated image.
+
+## `USER_ID` and `GROUP_ID` Build Arguments
+
+These both default to "1000", which is generally the ID of the first non-system user and group created on a clean Linux system.  Since local directories or files mapped 
+to a container maintain the user/group ownership ID and permission bits when mapped, the container's ownership IDs need to match a user and group in the container.
+At build time, an existing user/group with the specified IDs will be created if they don't exist.  If your base container already has the user/group with the specified
+IDs, those users/groups will be used as the user that executes SCAResolver.
+
+In most build scenarios, these can both remain at the default 1000.  To detect if you need to change these values, you can execute the following 
+commands as a stage in your pipeline to[ see the user id and group id](https://www.cyberciti.biz/faq/understanding-etcpasswd-file-format/) values:
+
+```
+getent passwd $(whoami)
+getent group $(groups)
+```
+
+
+
+The derived container is not intended to run as root.  After reading the [Notes on Execution](#notes-on-execution) section, you will understand that it is a very bad idea to execute a dependency resolution as root.
 
 ## CA Certificates
 
