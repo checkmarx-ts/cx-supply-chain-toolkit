@@ -6,4 +6,6 @@ trap $(exit $?) >> /dev/null 2>&1
 
 umask 0047
 
-ScaResolver $@ -c /sandbox/resolver/Configuration.yml --scan-path /sandbox/code $([[ $# -eq 0 ]] && echo "-h" || :)
+EXTRA=$($(which bash) -c "[[ $# -eq 0 ]] && echo \"-h\" || :")
+
+ScaResolver $@ -c /sandbox/resolver/Configuration.yml $EXTRA

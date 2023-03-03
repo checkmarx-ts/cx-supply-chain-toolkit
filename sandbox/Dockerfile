@@ -39,7 +39,6 @@ COPY ${CONFIG_DIR}/Configuration.yml /sandbox/resolver/
 
 FROM base-config AS base-linux
 ADD https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-linux64.tar.gz /sandbox/resolver
-RUN ls -l
 RUN [[ $(tar -xzf ScaResolver-linux64.tar.gz) -eq 0 ]] && : || rm -f ScaResolver-linux64.tar.gz && \
     chmod -R 750 /sandbox/resolver
 
@@ -69,16 +68,22 @@ USER  ${USER_ID}:${GROUP_ID}
 
 FROM base-linux AS resolver-debian
 
-RUN addgroup --gid ${GROUP_ID} sca && \
-    adduser root sca && \
-    adduser --disabled-password --no-create-home --ingroup sca --disabled-login resolver && \
-    chmod -R 750 /sandbox/resolver && \
-    apt update && apt install -y ca-certificates && \
-    apt clean && \
-    for cert in $(ls /cacerts); do cat /cacerts/$cert >> /etc/ssl/certs/ca-certificates.crt; done && \
-    chown -R root:sca /sandbox/output /sandbox/code /sandbox/scalogs /sandbox/resolver
+RUN apt update && \
+    apt install -y ca-certificates && \
+    apt clean
 
-# USER resolver
+SHELL ["/usr/bin/bash", "-c"]
+
+RUN getent group ${GROUP_ID} > /dev/null && \
+    [[ $? -ne 0 ]] && { addgroup --gid ${GROUP_ID} sca ; TARGET_GROUP=sca ; } || TARGET_GROUP=$(getent group ${GROUP_ID} | cut -d ':' -f1) && \
+    adduser root $TARGET_GROUP && \
+    getent passwd ${USER_ID} > /dev/null && \
+    [[ $? -ne 0 ]] && { adduser --disabled-password --no-create-home --ingroup sca --disabled-login --uid ${USER_ID} resolver ; TARGET_NAME=resolver; } || TARGET_NAME=$(getent passwd ${USER_ID} | cut -d ':' -f1) && \
+    chmod -R 750 /sandbox/resolver && \
+    for cert in $(ls /cacerts); do cat /cacerts/$cert >> /etc/ssl/certs/ca-certificates.crt; done && \
+    chown -R root:$TARGET_GROUP /sandbox/output /sandbox/code /sandbox/scalogs /sandbox/resolver
+
+USER  ${USER_ID}:${GROUP_ID}
 
 FROM base-linux AS resolver-redhat
 
@@ -92,7 +97,7 @@ RUN [[ $(command -v microdnf > /dev/null 2>&1) -eq 0 ]] && microdnf install -y -
     update-ca-trust extract && \
     chown -R root:sca /sandbox/output /sandbox/code /sandbox/scalogs /sandbox/resolver
 
-# USER resolver
+USER  ${USER_ID}:${GROUP_ID}
 
 FROM base-linux-yum-tar AS resolver-amazon
 
@@ -107,4 +112,4 @@ RUN yum install -y shadow-utils && \
     update-ca-trust extract && \
     chown -R root:sca /sandbox/output /sandbox/code /sandbox/scalogs /sandbox/resolver
 
-# USER resolver
+USER  ${USER_ID}:${GROUP_ID}
