@@ -14,17 +14,17 @@ testBuildNoBaseTargetsAlpineSuccess()
     assertEquals 0 $?
 }
 
-# testBuildNoBaseTargetsNonAlpineFails()
-# {
-#     $DOCKER_BUILD_PREFIX -t test:tag --target=resolver-alpine --target=resolver-redhat ..
-#     assertNotEquals 0 $?
-# }
+testBuildNoBaseTargetsNonAlpineFails()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --target=resolver-alpine --target=resolver-redhat ..
+    assertNotEquals 0 $?
+}
 
-# testBuildGradleDebianUbuntuFocalSuccess()
-# {
-#     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-focal --target=resolver-debian ..
-#     assertEquals 0 $?
-# }
+testBuildGradleDebianUbuntuFocalSuccess()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-focal --target=resolver-debian ..
+    assertEquals 0 $?
+}
 
 # testBuildGradleDebianUbuntuJammySuccess()
 # {
