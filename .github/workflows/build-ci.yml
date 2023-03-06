@@ -30,7 +30,7 @@ jobs:
         with:
           install: true
           platforms: linux/amd64
-          append: --cache-to type=gha
+          append: --use --driver=docker-container
       - name: Execute Sandbox Execution Tests
         run: |
           cd ${{ github.workspace }}/sandbox/tests
