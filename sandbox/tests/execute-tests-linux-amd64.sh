@@ -21,10 +21,14 @@ oneTimeSetUp() {
 
 echo ----------------------------------
 echo $DOCKER_RUN_PREFIX
+echo $GH_ACTION_BUILD_COMPAT
+env
 echo ----------------------------------
 
 
     $DOCKER_BUILD_PREFIX $GH_ACTION_BUILD_COMPAT -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
+
+docker image ls
 
    
 }
