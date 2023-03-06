@@ -21,11 +21,11 @@ oneTimeSetUp() {
 
 echo ----------------------------------
 echo $DOCKER_RUN_PREFIX
-[[ -z "${GH_ACTION_BUILD_COMPAT}" ]] && echo NOT DEFINED || echo IT IS DEFINED
+[[ -z "${BUILD_COMPAT}" ]] && echo NOT DEFINED || echo IT IS DEFINED
 echo ----------------------------------
 
 
-    $DOCKER_BUILD_PREFIX $GH_ACTION_BUILD_COMPAT -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
+    $DOCKER_BUILD_PREFIX $BUILD_COMPAT -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
 
 docker image ls
 

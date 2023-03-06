@@ -4,7 +4,7 @@ on:
   push:
 
 env:
-  GH_ACTION_BUILD_COMPAT: ${{ vars.GH_ACTION_BUILD_COMPAT }}
+  BUILD_COMPAT: ${{ vars.WORKFLOW_BUILD_COMPAT }}
 
 jobs:
   
