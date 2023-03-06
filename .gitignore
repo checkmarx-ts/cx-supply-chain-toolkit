@@ -1,2 +1,3 @@
 sandbox/scaresolver-bin/*.gz
 sandbox/*.sh
+**/output
