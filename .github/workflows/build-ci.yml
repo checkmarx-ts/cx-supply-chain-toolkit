@@ -29,8 +29,8 @@ jobs:
         uses: docker/setup-buildx-action@v2
         with:
           install: true
+          use: true
           platforms: linux/amd64
-          append: --use --driver=docker-container
       - name: Execute Sandbox Execution Tests
         run: |
           cd ${{ github.workspace }}/sandbox/tests
