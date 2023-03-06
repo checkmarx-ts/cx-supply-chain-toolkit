@@ -12,15 +12,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Execute Sandbox Build Tests
-        run: ${{ github.workspace }}/sandbox/tests/build-tests.sh
+        run: |
+        cd ${{ github.workspace }}/sandbox/tests
+        ./build-tests.sh
 
   execution-unit-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Execute Sandbox Execution Tests
-        run: ${{ github.workspace }}/sandbox/tests/execute-tests.sh
+        run: |
+        cd ${{ github.workspace }}/sandbox/tests
+        ./execute-tests.sh
     
