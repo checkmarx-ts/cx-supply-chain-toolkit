@@ -2,10 +2,13 @@
 
 . ./common
 
+PROJECT_DEFAULT_NAME="sca-resolver-sandbox-automated-test"
+
+
 setUp()
 {
-    [ -d $OUTPUT_DIR ] && { rm -rf $OUTPUT_DIR ; mkdir -p $OUTPUT_DIR ; } || mkdir -p $OUTPUT_DIR
-    [ -d $INPUT_DIR ] && { rm -rf $INPUT_DIR ; mkdir -p $INPUT_DIR ; } || mkdir -p $INPUT_DIR
+    [ ! -d $OUTPUT_DIR ] && mkdir -p $OUTPUT_DIR || :
+    [ ! -d $INPUT_DIR ] && mkdir -p $INPUT_DIR || :
 
 }
 
@@ -17,19 +20,7 @@ tearDown()
 
 oneTimeSetUp() {
     git clone https://github.com/checkmarx-ltd/cx-flow.git cxflow
-
-
-echo ----------------------------------
-echo $DOCKER_RUN_PREFIX
-[[ -z "${BUILD_COMPAT}" ]] && echo NOT DEFINED || echo IT IS DEFINED
-echo ----------------------------------
-
-
     $DOCKER_BUILD_PREFIX $BUILD_COMPAT -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
-
-docker image ls
-
-   
 }
 
 oneTimeTearDown() {
@@ -50,6 +41,16 @@ testHelpSameAsNoArgs() {
     EXEC_RESULT_ARGS=$?
 
     assertTrue 0 "[ $EXEC_RESULT_NOARGS -eq $EXEC_RESULT_ARGS -a $(wc -l output/noargs_out.txt | cut -d ' ' -f1) -eq $(wc -l output/args_out.txt | cut -d ' ' -f1) ]"
+}
+
+testOfflineScanOfCxFlow () {
+    $DOCKER_RUN_PREFIX test \
+        offline \
+        -s /sandbox/input \
+        -n $PROJECT_DEFAULT_NAME \
+        -r /sandbox/output/results.json
+
+    assertTrue 0 "[ -e ${OUTPUT_DIR}/results.json ]"
 }
 
 . ./shunit2-2.1.8/shunit2
