@@ -48,13 +48,19 @@ testOfflineScanOfCxFlow () {
     ls -l
 
     echo ---------------------------
-    $DOCKER_RUN_PREFIX --entrypoint="ls -l" test
-    
+    $DOCKER_RUN_PREFIX --entrypoint="ls" test -l ..
+
     echo ---------------------------
     $DOCKER_RUN_PREFIX --entrypoint="whoami" test
 
     echo ---------------------------
     $DOCKER_RUN_PREFIX --entrypoint="groups" test
+
+    echo ---------------------------
+    $DOCKER_RUN_PREFIX --entrypoint="getent" test group gradle
+    echo ---------------------------
+    $DOCKER_RUN_PREFIX --entrypoint="getent" test passwd gradle
+
 
     $DOCKER_RUN_PREFIX test \
         offline \
