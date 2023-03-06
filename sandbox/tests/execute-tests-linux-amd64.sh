@@ -45,7 +45,9 @@ testHelpSameAsNoArgs() {
 
 testOfflineScanOfCxFlow () {
 
-    ls -l
+
+    echo ---------------------------
+    echo $BUILD_COMPAT
 
     echo ---------------------------
     $DOCKER_RUN_PREFIX --entrypoint="ls" test -l ..
