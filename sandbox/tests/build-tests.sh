@@ -2,11 +2,6 @@
 
 . ./common
 
-tearDown()
-{
-    [ $(docker image ls test:tag | wc -l) -gt 1 ] && docker image rm test:tag
-}
-
 testBuildGradleAlpine()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
