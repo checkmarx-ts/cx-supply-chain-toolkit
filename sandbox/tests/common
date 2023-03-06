@@ -9,6 +9,6 @@ fi
 
 
 DOCKER_BUILD_PREFIX="docker build"
-DOCKER_RUN_PREFIX="docker run -it --rm -v ./:/sandbox/input -v ./output:/sandbox/output -v ./output:/sandbox/scalogs"
+DOCKER_RUN_PREFIX="docker run -t --rm -v ./:/sandbox/input -v ./output:/sandbox/output -v ./output:/sandbox/scalogs"
 
 set +e
