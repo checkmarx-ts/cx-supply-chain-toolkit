@@ -47,6 +47,15 @@ testOfflineScanOfCxFlow () {
 
     ls -l
 
+    echo ---------------------------
+    $DOCKER_RUN_PREFIX --entrypoint="ls -l" test
+    
+    echo ---------------------------
+    $DOCKER_RUN_PREFIX --entrypoint="whoami" test
+
+    echo ---------------------------
+    $DOCKER_RUN_PREFIX --entrypoint="groups" test
+
     $DOCKER_RUN_PREFIX test \
         offline \
         -s /sandbox/input \
