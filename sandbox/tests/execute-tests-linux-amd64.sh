@@ -17,8 +17,15 @@ tearDown()
 
 oneTimeSetUp() {
     git clone https://github.com/checkmarx-ltd/cx-flow.git cxflow
+
+
+echo ----- BEFORE BUILD
+    docker image ls
+
+
     $DOCKER_BUILD_PREFIX -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
 
+echo ----- AFTER BUILD
     docker image ls
    
 }

@@ -2,11 +2,7 @@ name: build-ci
 on:
   workflow_dispatch:
   push:
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
+
 jobs:
   
   image-build-unit-tests-linux-amd64:
