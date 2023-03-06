@@ -1,13 +1,6 @@
 #! /bin/bash
 
-pwd
-
 . ./common
-
-
-ls -l
-
-
 
 tearDown()
 {

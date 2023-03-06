@@ -54,7 +54,7 @@ RUN chmod -R 750 /sandbox/resolver
 ##########################################################################
 FROM base-config AS resolver-alpine
 
-COPY --from=extracted-musl /sandbox/resolver/* /sandbox/resolver
+COPY --from=extracted-musl /sandbox/resolver/* /sandbox/resolver/
 
 RUN apk add -q libstdc++ bash && \
     [[ "$(getent group ${GROUP_ID})" = "" ]] && { addgroup -g ${GROUP_ID} sca ; TARGET_GROUP=sca ; } || TARGET_GROUP=$(getent group ${GROUP_ID} | cut -d ':' -f1) && \
@@ -69,7 +69,7 @@ USER  ${USER_ID}:${GROUP_ID}
 ##########################################################################
 FROM base-config AS resolver-debian
 
-COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver
+COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
 
 RUN apt update && \
     apt install -y ca-certificates && \
@@ -90,7 +90,7 @@ USER  ${USER_ID}:${GROUP_ID}
 ##########################################################################
 FROM base-config AS resolver-redhat
 
-COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver
+COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
 
 RUN \
     [[ $(command -v microdnf) != "" ]] && { microdnf install -y --nodocs shadow-utils which ; microdnf clean all ; } || : && \
@@ -107,7 +107,7 @@ USER  ${USER_ID}:${GROUP_ID}
 ##########################################################################
 FROM base-config AS resolver-amazon
 
-COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver
+COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
 
 RUN yum install -y shadow-utils which && \
     yum clean all && \
