@@ -8,7 +8,7 @@ then
 fi
 
 
-DOCKER_BUILD_PREFIX="docker build"
+DOCKER_BUILD_PREFIX="docker build --cache-to type=gha"
 DOCKER_RUN_PREFIX="docker run --rm -v ./:/sandbox/input -v ./output:/sandbox/output -v ./output:/sandbox/scalogs"
 
 set +e
