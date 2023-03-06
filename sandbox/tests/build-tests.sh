@@ -26,23 +26,23 @@ testBuildGradleDebianUbuntuFocalSuccess()
     assertEquals 0 $?
 }
 
-# testBuildGradleDebianUbuntuJammySuccess()
-# {
-#     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-jammy --target=resolver-debian ..
-#     assertEquals 0 $?
-# }
+testBuildGradleDebianUbuntuJammySuccess()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-jammy --target=resolver-debian ..
+    assertEquals 0 $?
+}
 
-# testBuildGradleWrongTypeFails()
-# {
-#     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-jammy --target=resolver-redhat ..
-#     assertNotEquals 0 $?
-# }
+testBuildGradleWrongTypeFails()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-jammy --target=resolver-redhat ..
+    assertNotEquals 0 $?
+}
 
-# testBuildAmazonSuccess()
-# {
-#     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=amazonlinux:latest --target=resolver-amazon ..
-#     assertEquals 0 $?
-# }
+testBuildAmazonSuccess()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=amazonlinux:latest --target=resolver-amazon ..
+    assertEquals 0 $?
+}
 
 # testBuildRedhatUbi9Success()
 # {
