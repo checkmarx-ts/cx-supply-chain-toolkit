@@ -1,0 +1,22 @@
+name: build-ci
+on: 
+  push:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+jobs:
+  
+  image-build-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute Sandbox Build Tests
+        run: sandbox/tests/build-tests.sh
+
+  execution-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute Sandbox Execution Tests
+        run: sandbox/tests/execute-tests.sh
+    
