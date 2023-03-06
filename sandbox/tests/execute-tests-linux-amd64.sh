@@ -21,8 +21,7 @@ oneTimeSetUp() {
 
 echo ----------------------------------
 echo $DOCKER_RUN_PREFIX
-echo $GH_ACTION_BUILD_COMPAT
-env
+echo [ -z "${GH_ACTION_BUILD_COMPAT}" ] && echo NOT DEFINED || echo IT IS DEFINED
 echo ----------------------------------
 
 

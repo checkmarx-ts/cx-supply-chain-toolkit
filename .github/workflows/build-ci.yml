@@ -22,6 +22,8 @@ jobs:
 
   execution-unit-tests-linux-amd64:
     runs-on: ubuntu-latest
+    env:
+      GH_ACTION_BUILD_COMPAT: ${{ vars.GH_ACTION_BUILD_COMPAT }}
     steps:
       - name: Fetch Code
         uses: actions/checkout@v3
@@ -32,8 +34,6 @@ jobs:
           use: true
           platforms: linux/amd64
       - name: Execute Sandbox Execution Tests
-        env:
-          GH_ACTION_BUILD_COMPAT: ${{ vars.GH_ACTION_BUILD_COMPAT }}
         run: |
           cd ${{ github.workspace }}/sandbox/tests
           ./execute-tests-linux-amd64.sh
