@@ -62,14 +62,14 @@ To properly interface with the container, some directories are intended to be ma
 |Directory|Required|Comments|
 |-|-|-|
 |`/sandbox/scalogs`| No | Used to write SCAResolver logs. |
-|`/sandbox/code`| Yes | This is where the code should exist that needs to be scanned. |
+|`/sandbox/input`| Yes | This is where the input should be mapped for SCAResolver inputs. |
 |`/sandbox/output`| Yes | This is the directory where SCAResolver results files will be written.|
 
 Performing a `docker run` for an SCAResolver image passes the arguments through to SCAResolver.  You can modify the `default-config/Configuration.yml` to set default options for SCAResolver.  In the [How to Build](#how-to-build) section, a method is described to allow you to choose a non-default `Configuration.yml` at the time of build.
 
 There are various ways of mapping local disk volumes to the container's directories.  One method is to provide the mapping from `docker run` such as:
 
-`docker run --rm -it -v /my-log-path:/sandbox/scalogs -v .:/sandbox/code -v ./sca-results:/sandbox/output my-scaresolver-tag {SCAResolver args...}`
+`docker run --rm -it -v /my-log-path:/sandbox/scalogs -v .:/sandbox/input -v ./sca-results:/sandbox/output my-scaresolver-tag {SCAResolver args...}`
 
 Note that options passed to SCAResolver that indicate where to place output should be provided with paths prefixed with `/sandbox/output`.  This
 is the location in the container where you have mapped a directory for output, so the written output will appear on your mapped volume.
@@ -77,7 +77,7 @@ is the location in the container where you have mapped a directory for output, s
 As an example, the `offline` [scan mode example](https://checkmarx.com/resource/documents/en/34965-19199-running-scans-using-checkmarx-sca-resolver.html#UUID-af718204-6dfc-2b27-439e-419b9157d364_id_RunningScansUsingCheckmarxSCAResolver-RunningaScan-OfflineMode) found in the SCAResolver documentation would be executed in a pipeline with a command similar to:
 
 ```
-docker run -it --rm -v .:/sandbox/code -v ./resolver-output:/sandbox/output -v ./resolver-logs:/sandbox/scalogs <your container tag> offline -n MyApp -r /sandbox/output/results.json
+docker run -it --rm -v .:/sandbox/input -v ./resolver-output:/sandbox/output -v ./resolver-logs:/sandbox/scalogs <your container tag> offline -n MyApp -r /sandbox/output/results.json
 
 ```
 

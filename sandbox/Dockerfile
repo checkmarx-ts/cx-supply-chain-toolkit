@@ -10,8 +10,8 @@ ARG USER_ID=1000
 
 RUN mkdir -p /sandbox/scalogs && \
     chmod -R 730 /sandbox/scalogs && \
-    mkdir -p /sandbox/code && \
-    chmod -R 750 /sandbox/code && \
+    mkdir -p /sandbox/input && \
+    chmod -R 750 /sandbox/input && \
     mkdir -p /sandbox/output && \
     chmod -R 730 /sandbox/output && \
     mkdir -p /sandbox/resolver/cache && \
@@ -62,7 +62,7 @@ RUN apk add -q libstdc++ bash && \
     addgroup root $TARGET_GROUP && \
     [[ "$(getent passwd ${USER_ID})" = "" ]] && {  adduser -D -s /sbin/nologin -g $TARGET_GROUP resolver ; TARGET_NAME=resolver ; } || TARGET_NAME=$(getent passwd ${USER_ID} | cut -d ':' -f1) && \
     for cert in $(ls /cacerts); do cat /cacerts/$cert >> /etc/ssl/certs/ca-certificates.crt; done && \
-    chown -R root:$TARGET_GROUP /sandbox/output /sandbox/code /sandbox/scalogs /sandbox/resolver
+    chown -R root:$TARGET_GROUP /sandbox/output /sandbox/input /sandbox/scalogs /sandbox/resolver
 
 USER  ${USER_ID}:${GROUP_ID}
 
@@ -84,7 +84,7 @@ RUN \
     [[ "$(getent passwd ${USER_ID})" = "" ]] && { adduser --disabled-password --no-create-home --ingroup sca --disabled-login --uid ${USER_ID} resolver ; TARGET_NAME=resolver; } || TARGET_NAME=$(getent passwd ${USER_ID} | cut -d ':' -f1) && \
     chmod -R 750 /sandbox/resolver && \
     for cert in $(ls /cacerts); do cat /cacerts/$cert >> /etc/ssl/certs/ca-certificates.crt; done && \
-    chown -R root:$TARGET_GROUP /sandbox/output /sandbox/code /sandbox/scalogs /sandbox/resolver
+    chown -R root:$TARGET_GROUP /sandbox/output /sandbox/input /sandbox/scalogs /sandbox/resolver
 
 USER  ${USER_ID}:${GROUP_ID}
 
@@ -101,7 +101,7 @@ RUN \
     chmod -R 750 /sandbox/resolver && \
     cp /cacerts/* /etc/pki/ca-trust/source/anchors/ && \
     update-ca-trust extract && \
-    chown -R root:$TARGET_GROUP /sandbox/output /sandbox/code /sandbox/scalogs /sandbox/resolver
+    chown -R root:$TARGET_GROUP /sandbox/output /sandbox/input /sandbox/scalogs /sandbox/resolver
 
 USER  ${USER_ID}:${GROUP_ID}
 
@@ -119,6 +119,6 @@ RUN yum install -y shadow-utils which && \
     chmod -R 750 /sandbox/resolver && \
     cp /cacerts/* /etc/pki/ca-trust/source/anchors/ && \
     update-ca-trust extract && \
-    chown -R root:sca /sandbox/output /sandbox/code /sandbox/scalogs /sandbox/resolver
+    chown -R root:sca /sandbox/output /sandbox/input /sandbox/scalogs /sandbox/resolver
 
 USER  ${USER_ID}:${GROUP_ID}
