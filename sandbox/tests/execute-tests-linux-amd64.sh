@@ -4,29 +4,28 @@
 
 setUp()
 {
-    [ -d "output" ] && { rm -rf output ; mkdir output ; } || mkdir output
-    [ -d "input" ] && { rm -rf input ; mkdir input ; } || mkdir input
+    [ -d $OUTPUT_DIR ] && { rm -rf $OUTPUT_DIR ; mkdir -p $OUTPUT_DIR ; } || mkdir -p $OUTPUT_DIR
+    [ -d $INPUT_DIR ] && { rm -rf $INPUT_DIR ; mkdir -p $INPUT_DIR ; } || mkdir -p $INPUT_DIR
 
 }
 
 tearDown()
 {
-    rm -rf output
-    rm -rf input
+    rm -rf $OUTPUT_DIR
+    rm -rf $INPUT_DIR
 }
 
 oneTimeSetUp() {
     git clone https://github.com/checkmarx-ltd/cx-flow.git cxflow
 
 
-echo ----- BEFORE BUILD
-    docker image ls
+echo ----------------------------------
+echo $DOCKER_RUN_PREFIX
+echo ----------------------------------
 
 
-    $DOCKER_BUILD_PREFIX --load -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
+    $DOCKER_BUILD_PREFIX $GH_ACTION_BUILD_COMPAT -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
 
-echo ----- AFTER BUILD
-    docker image ls
    
 }
 
@@ -35,8 +34,6 @@ oneTimeTearDown() {
 }
 
 testNoArgsShowsHelp() {
-    echo -----------IN TEST----------
-    docker image ls
     $DOCKER_RUN_PREFIX test > output/out.txt
     EXEC_RESULT=$?
     assertTrue 0 "[ $EXEC_RESULT -eq 0 -a $(wc -l output/out.txt | cut -d ' ' -f1) -gt 1 ]"

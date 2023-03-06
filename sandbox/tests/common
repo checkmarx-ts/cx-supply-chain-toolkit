@@ -7,8 +7,10 @@ then
     wget -qO- https://github.com/kward/shunit2/archive/refs/tags/v2.1.8.tar.gz | tar -xz
 fi
 
+INPUT_DIR=$(pwd)/input
+OUTPUT_DIR=$(pwd)/output
 
-DOCKER_BUILD_PREFIX="docker build --cache-to type=gha"
-DOCKER_RUN_PREFIX="docker run --rm -v ./:/sandbox/input -v ./output:/sandbox/output -v ./output:/sandbox/scalogs"
+DOCKER_BUILD_PREFIX="docker build"
+DOCKER_RUN_PREFIX="docker run --rm -v $INPUT_DIR:/sandbox/input -v $OUTPUT_DIR:/sandbox/output -v $OUTPUT_DIR:/sandbox/scalogs"
 
 set +e
