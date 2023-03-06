@@ -11,12 +11,16 @@ jobs:
   image-build-unit-tests:
     runs-on: ubuntu-latest
     steps:
+      - name: Fetch Code
+        uses: actions/checkout@v2
       - name: Execute Sandbox Build Tests
-        run: sandbox/tests/build-tests.sh
+        run: ${{ github.workspace }}/sandbox/tests/build-tests.sh
 
   execution-unit-tests:
     runs-on: ubuntu-latest
     steps:
+      - name: Fetch Code
+        uses: actions/checkout@v2
       - name: Execute Sandbox Execution Tests
-        run: sandbox/tests/execute-tests.sh
+        run: ${{ github.workspace }}/sandbox/tests/execute-tests.sh
     
