@@ -44,17 +44,17 @@ testBuildAmazonSuccess()
     assertEquals 0 $?
 }
 
-# testBuildRedhatUbi9Success()
-# {
-#     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=redhat/ubi9:latest --target=resolver-redhat ..
-#     assertEquals 0 $?
-# }
+testBuildRedhatUbi9Success()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=redhat/ubi9:latest --target=resolver-redhat ..
+    assertEquals 0 $?
+}
 
-# testBuildRedhatUbi9MinimalSuccess()
-# {
-#     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=redhat/ubi9-minimal:latest --target=resolver-redhat ..
-#     assertEquals 0 $?
-# }
+testBuildRedhatUbi9MinimalSuccess()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=redhat/ubi9-minimal:latest --target=resolver-redhat ..
+    assertEquals 0 $?
+}
 
 # testBuildRedhatUbi8Success()
 # {

@@ -21,9 +21,9 @@ jobs:
       - name: Execute Sandbox Build Tests
         run: |
           cd ${{ github.workspace }}/sandbox/tests
-          ./build-tests.sh
+          ./build-tests-linux-amd64.sh
 
-  execution-unit-tests:
+  execution-unit-tests-linux-amd64:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Code
@@ -35,5 +35,5 @@ jobs:
       - name: Execute Sandbox Execution Tests
         run: |
           cd ${{ github.workspace }}/sandbox/tests
-          ./execute-tests.sh
+          ./execute-tests-linux-amd64.sh
     
