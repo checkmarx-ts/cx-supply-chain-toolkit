@@ -2,17 +2,17 @@
 
 . ./common
 
-testBuildGradleAlpine()
+testBuildGradleAlpineSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
     assertEquals 0 $?
 }
 
-# testBuildNoBaseTargetsAlpineSuccess()
-# {
-#     $DOCKER_BUILD_PREFIX -t test:tag --target=resolver-alpine ..
-#     assertEquals 0 $?
-# }
+testBuildNoBaseTargetsAlpineSuccess()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --target=resolver-alpine ..
+    assertEquals 0 $?
+}
 
 # testBuildNoBaseTargetsNonAlpineFails()
 # {
