@@ -15,8 +15,8 @@ jobs:
         uses: actions/checkout@v3
       - name: Execute Sandbox Build Tests
         run: |
-        cd ${{ github.workspace }}/sandbox/tests
-        ./build-tests.sh
+          cd ${{ github.workspace }}/sandbox/tests
+          ./build-tests.sh
 
   execution-unit-tests:
     runs-on: ubuntu-latest
@@ -25,6 +25,6 @@ jobs:
         uses: actions/checkout@v3
       - name: Execute Sandbox Execution Tests
         run: |
-        cd ${{ github.workspace }}/sandbox/tests
-        ./execute-tests.sh
+          cd ${{ github.workspace }}/sandbox/tests
+          ./execute-tests.sh
     
