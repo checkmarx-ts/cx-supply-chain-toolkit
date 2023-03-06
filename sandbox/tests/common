@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+if [ ! -d "shunit2-2.1.8" ]
+then
+    wget -qO- https://github.com/kward/shunit2/archive/refs/tags/v2.1.8.tar.gz | tar -xz
+fi
+
+
+DOCKER_BUILD_PREFIX="docker build --no-cache --progress plain"
+
+set +e
