@@ -1,5 +1,7 @@
 #! /bin/bash
 
+. ./common
+
 setUp()
 {
     [ -d "output" ] && { rm -rf output ; mkdir output ; } || mkdir output 
@@ -17,3 +19,5 @@ oneTimeSetUp() {
 oneTimeTearDown() {
     [ -d "cxflow" ] && rm -rf cxflow || :
 }
+
+. ./shunit2-2.1.8/shunit2

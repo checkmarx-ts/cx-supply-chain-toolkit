@@ -8,6 +8,6 @@ then
 fi
 
 
-DOCKER_BUILD_PREFIX="docker build --no-cache --progress plain"
+DOCKER_BUILD_PREFIX="docker build"
 
 set +e

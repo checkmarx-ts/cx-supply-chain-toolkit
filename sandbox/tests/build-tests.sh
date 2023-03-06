@@ -5,7 +5,6 @@
 tearDown()
 {
     [ $(docker image ls test:tag | wc -l) -gt 1 ] && docker image rm test:tag
-    docker system prune -f
 }
 
 testBuildGradleAlpine()
