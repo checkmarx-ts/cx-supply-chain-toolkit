@@ -50,9 +50,8 @@ testOfflineScanOfCxFlow () {
         -n $PROJECT_DEFAULT_NAME \
         -r /sandbox/output/results.json
 
-    ls -lR
     getent passwd $(whoami)
-    getent group $(whoami)
+    getent group $(groups)
 
     assertTrue 0 "[ -e ${OUTPUT_DIR}/results.json ]"
 }
