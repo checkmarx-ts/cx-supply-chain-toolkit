@@ -1,6 +1,6 @@
 #! /bin/bash
 
-. common
+. ./common
 
 tearDown()
 {
@@ -117,5 +117,5 @@ testBuildAmazonCorretto11AlpineSuccess()
 }
 
 
-. shunit2-2.1.8/shunit2
+. ./shunit2-2.1.8/shunit2
 
