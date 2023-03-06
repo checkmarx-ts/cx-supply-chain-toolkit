@@ -2,6 +2,9 @@
 
 . ./common
 
+# TODO: Build test with UID/GID on all platforms to ensure the correct UID/GID is used.
+
+
 testBuildGradleAlpineSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..

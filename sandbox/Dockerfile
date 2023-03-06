@@ -61,6 +61,7 @@ RUN apk add -q libstdc++ bash && \
     addgroup root $TARGET_GROUP && \
     [[ "$(getent passwd ${USER_ID})" = "" ]] && {  adduser -D -s /sbin/nologin -g $TARGET_GROUP resolver ; TARGET_NAME=resolver ; } || TARGET_NAME=$(getent passwd ${USER_ID} | cut -d ':' -f1) && \
     for cert in $(ls /cacerts); do cat /cacerts/$cert >> /etc/ssl/certs/ca-certificates.crt; done && \
+    echo BUILD UID:GID: $TARGET_GROUP:$TARGET_USER ($USER_ID:$GROUP_ID) && \
     chown -R root:$TARGET_GROUP /sandbox/output /sandbox/input /sandbox/scalogs /sandbox/resolver
 
 USER  ${USER_ID}:${GROUP_ID}
