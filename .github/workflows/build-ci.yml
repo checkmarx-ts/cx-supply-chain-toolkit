@@ -32,6 +32,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
         with:
           install: true
+          platforms: linux/amd64
       - name: Execute Sandbox Execution Tests
         run: |
           cd ${{ github.workspace }}/sandbox/tests

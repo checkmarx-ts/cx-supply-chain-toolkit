@@ -4,20 +4,41 @@
 
 setUp()
 {
-    [ -d "output" ] && { rm -rf output ; mkdir output ; } || mkdir output 
+    [ -d "output" ] && { rm -rf output ; mkdir output ; } || mkdir output
+    [ -d "input" ] && { rm -rf input ; mkdir input ; } || mkdir input
+
 }
 
 tearDown()
 {
     rm -rf output
+    rm -rf input
 }
 
 oneTimeSetUp() {
     git clone https://github.com/checkmarx-ltd/cx-flow.git cxflow
+    $DOCKER_BUILD_PREFIX -t test:gradle --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
+   
 }
 
 oneTimeTearDown() {
     [ -d "cxflow" ] && rm -rf cxflow || :
+}
+
+testNoArgsShowsHelp() {
+    $DOCKER_RUN_PREFIX test:gradle > output/out.txt
+    EXEC_RESULT=$?
+    assertTrue 0 "[ $EXEC_RESULT -eq 0 -a $(wc -l output/out.txt | cut -d ' ' -f1) -gt 1 ]"
+}
+
+testHelpSameAsNoArgs() {
+    $DOCKER_RUN_PREFIX test:gradle > output/noargs_out.txt
+    EXEC_RESULT_NOARGS=$?
+
+    $DOCKER_RUN_PREFIX test:gradle help > output/args_out.txt
+    EXEC_RESULT_ARGS=$?
+
+    assertTrue 0 "[ $EXEC_RESULT_NOARGS -eq $EXEC_RESULT_ARGS -a $(wc -l output/noargs_out.txt | cut -d ' ' -f1) -eq $(wc -l output/args_out.txt | cut -d ' ' -f1) ]"
 }
 
 . ./shunit2-2.1.8/shunit2
