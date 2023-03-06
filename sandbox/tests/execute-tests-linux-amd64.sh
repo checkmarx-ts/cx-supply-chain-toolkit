@@ -44,6 +44,9 @@ testHelpSameAsNoArgs() {
 }
 
 testOfflineScanOfCxFlow () {
+
+    ls -l
+
     $DOCKER_RUN_PREFIX test \
         offline \
         -s /sandbox/input \
