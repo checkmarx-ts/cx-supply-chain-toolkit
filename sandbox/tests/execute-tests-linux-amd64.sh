@@ -23,7 +23,7 @@ echo ----- BEFORE BUILD
     docker image ls
 
 
-    $DOCKER_BUILD_PREFIX -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
+    $DOCKER_BUILD_PREFIX --push -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
 
 echo ----- AFTER BUILD
     docker image ls
