@@ -1,0 +1,29 @@
+
+
+
+bannerBegin()
+{
+    echo ------------ BEGIN: $1 ------------
+}
+
+
+bannerEnd()
+{
+    echo ------------ END: $1 ------------
+}
+
+
+getCxFlowJarVersion()
+{
+    local v=$(unzip -c $1 META-INF/build-info.properties | grep build.version | cut -d '=' -f2)
+    echo $v
+}
+
+displayCxFlowVersionInfo()
+{
+    echo $1 Version: $(getCxFlowJarVersion $1)
+    echo MD5    : $(md5sum $1 | cut -d ' ' -f1)
+    echo SHA1   : $(sha1sum $1 | cut -d ' ' -f1)
+    echo SHA256 : $(sha256sum $1 | cut -d ' ' -f1)
+    echo SHA512 : $(sha512sum $1 | cut -d ' ' -f1)
+}
