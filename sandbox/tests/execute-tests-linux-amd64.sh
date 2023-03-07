@@ -67,7 +67,7 @@ isMissingVars() {
     [[ -z "${TEST_TENANT}" || -z "${TEST_USER}" || -z "${TEST_PASSWORD}" ]] && return 0 || return 1 
 }
 
-testTwoStageScan () {
+testTwoStageScanOfCxFlow () {
     
     if isMissingVars
     then
