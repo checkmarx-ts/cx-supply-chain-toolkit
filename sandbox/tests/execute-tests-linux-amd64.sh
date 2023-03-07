@@ -19,7 +19,7 @@ tearDown()
 }
 
 oneTimeSetUp() {
-    git clone https://github.com/checkmarx-ltd/cx-flow.git cxflow
+    git clone https://github.com/checkmarx-ltd/cx-flow.git $(pwd)/cxflow
     $DOCKER_BUILD_PREFIX $BUILD_COMPAT -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
 }
 
@@ -44,13 +44,68 @@ testHelpSameAsNoArgs() {
 }
 
 testOfflineScanOfCxFlow () {
+
+    cp -r $(pwd)/cxflow/* $INPUT_DIR
+
     $DOCKER_RUN_PREFIX test \
         offline \
         -s /sandbox/input \
         -n $PROJECT_DEFAULT_NAME \
-        -r /sandbox/output/results.json
+        -r /sandbox/output/results.json > /dev/null 2>&1
 
     assertTrue 0 "[ -e ${OUTPUT_DIR}/results.json ]"
 }
+
+reportMissingVars() {
+    echo Skipping test $1 due to missing environment variables:
+    [ -z "${TEST_TENANT}" ] && echo TEST_TENANT
+    [ -z "${TEST_USER}" ] && echo TEST_USER
+    [ -z "${TEST_PASSWORD}" ] && echo TEST_PASSWORD
+}
+
+isMissingVars() {
+    [[ -z "${TEST_TENANT}" || -z "${TEST_USER}" || -z "${TEST_PASSWORD}" ]] && return 0 || return 1 
+}
+
+testTwoStageScan () {
+    
+    if isMissingVars
+    then
+        startSkipping
+        reportMissingVars "${FUNCNAME[0]}"
+    else
+        cp -r $(pwd)/cxflow/* $INPUT_DIR
+
+        $DOCKER_RUN_PREFIX test \
+            offline \
+            -s /sandbox/input \
+            -n $PROJECT_DEFAULT_NAME \
+            -r /sandbox/output/results.json > /dev/null 2>&1
+
+        rm -rf $INPUT_DIR/*
+        mv $OUTPUT_DIR/results.json $INPUT_DIR/results.json
+
+        $DOCKER_RUN_PREFIX test \
+            upload \
+            --report-path=/sandbox/output \
+            --report-type=Risk \
+            -a "${TEST_TENANT}" \
+            -u "${TEST_USER}" \
+            -p "${TEST_PASSWORD}" \
+            -n $PROJECT_DEFAULT_NAME \
+            --bypass-exitcode=True \
+            -r /sandbox/input/results.json  > /dev/null 2>&1
+
+    fi
+
+    assertTrue 0 $?
+    
+    [[ isSkipping -eq "${SHUNIT_TRUE}" ]] && endSkipping
+}
+
+
+
+
+
 
 . ./shunit2-2.1.8/shunit2

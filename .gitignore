@@ -1,7 +1,8 @@
 sandbox/scaresolver-bin/*.gz
 sandbox/*.sh
 **/output
-**/tests/shunit*
-**/tests/cxflow
+**/input
+**/shunit*
+**/cxflow
 
 
