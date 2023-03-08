@@ -33,14 +33,20 @@ fi
 
 if [ ! -z "${CXFLOW_YAML_URL}" ]
 then
-    bannerBegin "Downloading Yaml Configuration"
+    bannerBegin "Downloading CxFlow Yaml Configuration"
     wget -nv -P /yaml $CXFLOW_YAML_URL
     CONFIG_YAML=$(ls /yaml)
     echo Using $CONFIG_YAML
     CONFIG_PARAM="--spring.config.location=/yaml/${CONFIG_YAML}"
-    bannerEnd "Downloading Yaml Configuration"
+    bannerEnd "Downloading CxFlow Yaml Configuration"
 fi
 
+if [ ! -z "${DISPATCHER_YAML_URL}" ]
+then
+    bannerBegin "Downloading SCAResolver Dispatcher Yaml Configuration"
+    wget -nv -P /resolver/yaml $DISPATCHER_YAML_URL
+    bannerEnd "Downloading SCAResolver Dispatcher Yaml Configuration"
+fi
 
 
 if [ ! -z "${SCA_PATH_TO_SCA_RESOLVER}" ]
@@ -51,6 +57,6 @@ then
 fi
 
 
-java $JAVA_OPTS $JAVA_PROPS $SPRING_PROPS -jar $CXFLOW_JAR $@ $CONFIG_PARAM --sca.path-to-sca-resolver=""
+java $JAVA_OPTS $JAVA_PROPS $SPRING_PROPS -jar $CXFLOW_JAR $@ $CONFIG_PARAM --sca.path-to-sca-resolver="/resolver"
 
 exit $?

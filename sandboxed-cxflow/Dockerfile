@@ -1,13 +1,18 @@
-FROM amazoncorretto:11
+FROM amazoncorretto:11-al2022-jdk
 
 ENV JAVA_OPTS="-Xms512m -Xmx2048m"
 ENV JAVA_PROPS="-Djava.security.egd=file:/dev/./urandom"
 ENV SPRING_PROPS="-Dspring.profiles.active=web"
 
-RUN yum install -y shadow-utils which unzip wget git && \
+RUN yum install -y shadow-utils which unzip wget git docker && \
+    # amazon-linux-extras install -y docker && \
+    systemctl enable containerd && \
+    systemctl enable docker && \
     yum clean all && \
-    rm -rf /var/cache/yum && \
-    adduser --no-create-home cxflow && \
+    rm -rf /var/cache/yum 
+
+RUN \
+    adduser --no-create-home -G docker cxflow && \
     usermod -G cxflow root && \
     mkdir /app && \
     chown root:cxflow /app && \
@@ -15,6 +20,9 @@ RUN yum install -y shadow-utils which unzip wget git && \
     mkdir /yaml && \
     chown root:cxflow /yaml && \
     chmod 770 /yaml && \
+    mkdir -p /resolver/yaml && \
+    chown -R root:cxflow /resolver && \
+    chmod -R 770 /resolver && \
     umask 0057
 
 COPY --from=checkmarx/cx-flow:latest /app/cx-flow.jar /stage/
