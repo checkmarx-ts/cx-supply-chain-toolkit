@@ -4,14 +4,14 @@ ENV JAVA_OPTS="-Xms512m -Xmx2048m"
 ENV JAVA_PROPS="-Djava.security.egd=file:/dev/./urandom"
 ENV SPRING_PROPS="-Dspring.profiles.active=web"
 
-RUN yum install -y shadow-utils which unzip wget git docker sudo passwd && \
+RUN yum install -y shadow-utils which unzip wget git docker sudo passwd pip && \
     yum clean all && \
     rm -rf /var/cache/yum
 
 COPY etc/ /etc/
 
 RUN \
-    adduser --no-create-home -G docker cxflow && \
+    adduser -G docker cxflow && \
     usermod -G cxflow root && \
     passwd -d cxflow && \
     mkdir /app && \
@@ -42,9 +42,12 @@ RUN mkdir -p /alt && \
     chown root:cxflow /alt && \
     chmod 770 /alt
 
+COPY --chown=root:cxflow dispatcher/ /dispatcher/
 
 WORKDIR /app
 USER cxflow
+
+RUN pip install -r /dispatcher/requirements.txt
 
 CMD ["--web"]
 ENTRYPOINT ["/app/entrypoint.sh"]

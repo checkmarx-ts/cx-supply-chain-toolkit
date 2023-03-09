@@ -68,6 +68,6 @@ then
 fi
 
 
-java $JAVA_OPTS $JAVA_PROPS $SPRING_PROPS -jar $CXFLOW_JAR $@ $CONFIG_PARAM --sca.path-to-sca-resolver="/resolver"
+java $JAVA_OPTS $JAVA_PROPS $SPRING_PROPS -jar $CXFLOW_JAR $@ $CONFIG_PARAM --sca.path-to-sca-resolver="/dispatcher"
 
 exit $?
