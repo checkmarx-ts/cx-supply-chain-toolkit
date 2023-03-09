@@ -5,11 +5,11 @@ CXFLOW_JAR=/app/cx-flow.jar
 set -e
 umask 0047
 
-sudo dockerd > /var/log/docker/docker.log 2>&1 &
-
 . $(dirname $0)/funcs
 
 [ "$1" = "_VERSIONONLY_" ] && { getCxFlowJarVersion $CXFLOW_JAR ; exit 0 ; }
+
+[ ! -v NO_DOCKERD ] && sudo dockerd > /var/log/docker/docker.log 2>&1 & || :
 
 cat banner.txt
 
@@ -31,6 +31,15 @@ then
     displayCxFlowVersionInfo $CXFLOW_JAR
     bannerEnd "CxFlow Replacement Version Check (${CXFLOW_JAR})"
 
+fi
+
+
+if [ ! -z "${CXFLOW_JAR_SHA256}" ]
+then
+    bannerBegin "Validating hash of (${CXFLOW_JAR})"
+    HASH=$(sha256sum $1 | cut -d ' ' -f1)
+    [ "${HASH}" = "${CXFLOW_JAR_SHA256}" ] && echo Hash match!
+    bannerEnd "Validating hash of (${CXFLOW_JAR})"
 fi
 
 if [ ! -z "${CXFLOW_YAML_URL}" ]
