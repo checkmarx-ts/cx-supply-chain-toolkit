@@ -4,17 +4,20 @@ ENV JAVA_OPTS="-Xms512m -Xmx2048m"
 ENV JAVA_PROPS="-Djava.security.egd=file:/dev/./urandom"
 ENV SPRING_PROPS="-Dspring.profiles.active=web"
 
-RUN yum install -y shadow-utils which unzip wget git docker && \
-    # amazon-linux-extras install -y docker && \
-    systemctl enable containerd && \
-    systemctl enable docker && \
+RUN yum install -y shadow-utils which unzip wget git docker sudo passwd && \
     yum clean all && \
-    rm -rf /var/cache/yum 
+    rm -rf /var/cache/yum
+
+COPY etc/ /etc/
 
 RUN \
     adduser --no-create-home -G docker cxflow && \
     usermod -G cxflow root && \
+    passwd -d cxflow && \
     mkdir /app && \
+    mkdir -p /var/log/docker && \
+    chown root:docker /var/log/docker && \
+    chmod g+w /var/log/docker && \
     chown root:cxflow /app && \
     chmod 770 /app && \
     mkdir /yaml && \
