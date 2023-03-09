@@ -109,7 +109,8 @@ as the CxFlow configuration.
 
 ## `DISPATCHER_YAML_URL`
 
-TBD
+If the environment variable `DISPATCHER_YAML_URL` contains a URL to a Dispatcher YAML configuration file, it will be downloaded and set
+as the Dispatcher configuration.
 
 
 # SCAResolver Dispatcher
@@ -117,10 +118,10 @@ TBD
 The exact description of the Dispatcher is TBD.  The basic idea is to execute SCAResolver in a mostly sandboxed execution environment.  The execution environment
 could be a customized build environment.
 
-The execution environment can be define as:
+The execution environment can be defined as:
 
-    * default - The default image, runtime parameters, environment variables, and SCAResolver parameters used if no runtime environment can be determined
-    * tag - The image, runtime parameters, environment variables, and SCAResolver parameters used if a project has a matching tag
+* default - The default image, runtime parameters, environment variables, and SCAResolver parameters used if no runtime environment can be determined
+* tag - The image, runtime parameters, environment variables, and SCAResolver parameters used if a project has a matching tag
 
 Project tags are obtained from a config-as-code file in the root of the repository (not the CxFlow config as code file).  Future enhancements may allow this to be resolved from
 project tags found via the SCA API.
