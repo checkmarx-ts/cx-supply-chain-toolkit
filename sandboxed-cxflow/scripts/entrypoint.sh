@@ -5,6 +5,8 @@ CXFLOW_JAR=/app/cx-flow.jar
 set -e
 umask 0047
 
+sudo dockerd > /var/log/docker/docker.log 2>&1 &
+
 . $(dirname $0)/funcs
 
 [ "$1" = "_VERSIONONLY_" ] && { getCxFlowJarVersion $CXFLOW_JAR ; exit 0 ; }
