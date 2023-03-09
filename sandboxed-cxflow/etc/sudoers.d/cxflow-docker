@@ -1,0 +1,1 @@
+%docker ALL=(root:docker) /usr/bin/dockerd, /usr/sbin/iptables
