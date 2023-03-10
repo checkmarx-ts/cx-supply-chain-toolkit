@@ -74,9 +74,10 @@ COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
 
 RUN apt update && \
     apt install -y ca-certificates && \
+    ln -s $(which bash) /usr/bin/bsh && \
     apt clean
 
-SHELL ["/usr/bin/bash", "-c"]
+SHELL ["/usr/bin/bsh", "-c"]
 
 RUN \
     [[ "$(getent group ${GROUP_ID})" = "" ]] && { addgroup --gid ${GROUP_ID} sca ; TARGET_GROUP=sca ; } || TARGET_GROUP=$(getent group ${GROUP_ID} | cut -d ':' -f1) && \

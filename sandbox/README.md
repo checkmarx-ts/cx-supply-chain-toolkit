@@ -27,7 +27,7 @@ with popular base images used to create build environments.  Currently, the stag
 * resolver-redhat
 * resolver-amazon
 
-The stage names are intended to indicate compatibility with configuration steps for the variant of Linux in the root container.
+The stage names are intended to indicate compatibility with configuration steps for the variant of Linux in the root container.  Building these images works best when Docker `buildx` is used for building the image.
 
 There is currently no support for Windows base images.
 

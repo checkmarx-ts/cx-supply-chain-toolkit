@@ -110,6 +110,18 @@ testBuildAmazonCorretto11AlpineSuccess()
     assertEquals 0 $?
 }
 
+testPureDebianSuccess()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=debian:latest --target=resolver-debian ..
+    assertEquals 0 $?
+}
+
+testUbuntuSuccess()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=ubuntu:latest --target=resolver-debian ..
+    assertEquals 0 $?
+}
+
 
 . ./shunit2-2.1.8/shunit2
 
