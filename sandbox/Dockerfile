@@ -3,10 +3,6 @@ ARG BASE=alpine:latest
 ##########################################################################
 FROM ${BASE} AS base-config
 
-ARG CONFIG_DIR=default-config
-ARG GROUP_ID=1000
-ARG USER_ID=1000
-
 RUN mkdir -p /sandbox/scalogs && \
     chmod -R 730 /sandbox/scalogs && \
     mkdir -p /sandbox/input && \
@@ -53,6 +49,8 @@ RUN chmod -R 750 /sandbox/resolver
 
 ##########################################################################
 FROM base-config AS resolver-alpine
+ARG GROUP_ID=1000
+ARG USER_ID=1000
 
 COPY --from=extracted-musl /sandbox/resolver/* /sandbox/resolver/
 
@@ -69,6 +67,8 @@ USER  ${USER_ID}:${GROUP_ID}
 
 ##########################################################################
 FROM base-config AS resolver-debian
+ARG GROUP_ID=1000
+ARG USER_ID=1000
 
 COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
 
@@ -91,6 +91,8 @@ USER  ${USER_ID}:${GROUP_ID}
 
 ##########################################################################
 FROM base-config AS resolver-redhat
+ARG GROUP_ID=1000
+ARG USER_ID=1000
 
 COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
 
@@ -109,6 +111,8 @@ USER  ${USER_ID}:${GROUP_ID}
 
 ##########################################################################
 FROM base-config AS resolver-amazon
+ARG GROUP_ID=1000
+ARG USER_ID=1000
 
 COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
 

@@ -4,5 +4,6 @@ sandbox/*.sh
 **/input
 **/shunit*
 **/cxflow
+**/dispatcher/yaml
 
 
