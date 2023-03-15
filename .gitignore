@@ -6,4 +6,8 @@ sandbox/*.sh
 **/cxflow
 **/dispatcher/yaml
 
+**/__pycache__
 
+**/.vscode
+**/.venv
+**/.conda
