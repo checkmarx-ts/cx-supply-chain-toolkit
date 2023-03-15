@@ -55,7 +55,7 @@ fi
 if [ ! -z "${DISPATCHER_YAML_URL}" ]
 then
     bannerBegin "Downloading SCAResolver Dispatcher Yaml Configuration"
-    wget -nv -P /resolver/yaml $DISPATCHER_YAML_URL
+    wget -nv -P /dispatcher/yaml $DISPATCHER_YAML_URL
     bannerEnd "Downloading SCAResolver Dispatcher Yaml Configuration"
 fi
 

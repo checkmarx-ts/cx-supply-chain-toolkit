@@ -113,6 +113,11 @@ If the environment variable `DISPATCHER_YAML_URL` contains a URL to a Dispatcher
 as the Dispatcher configuration.
 
 
+## `DEBUG`
+
+If the variable `DEBUG` exists in the environment, debug logging output will be enabled.
+
+
 # SCAResolver Dispatcher
 
 The exact description of the Dispatcher is TBD.  The basic idea is to execute SCAResolver in a mostly sandboxed execution environment.  The execution environment
@@ -128,62 +133,196 @@ project tags found via the SCA API.
 
 ## Dispatcher Configuration
 
-This is presented in YAML.  Environment variables that follow the Spring Boot convention can be used instead of a YAML file.
+Configuration can be represented by both YAML and Environment variables.  The first YAML file found in `$(pwd)/yaml` when the Dispatcher starts is used
+as the configuration file.  The configuration is evaluated in the following order of precedence:
+
+1. Environment variables
+2. YAML configuration
+
+An example of the complete YAML configuration can be observed below:
 
 ```yaml
 
 docker:
     login:
-        <server name>:
-            username:
-            password:
-    ...
-        <server name>:
-            username:
-            password:
+        hub.docker.io:
+            username: XXXXXXXXX
+            password: XXXXXXXXX
+        ...
+        bar.com:
+            username: XXXXXXXXX
+            password: XXXXXXXXX
 
+resolver:
+    defaults:
+        containerttl: 15m
+        exectimeout: 10m
+        defaulttag: default
 
-resolver-images:
-    default-image:
-        container: <image>:<tag>
-        container-ttl: 15m
-        exec-timeout: 10m
-        exec-env:
-            <variable>: value
-            ...
-            <variable>: value
-        exec-params:
-            - <sca resolver param>
-            ...
-            - <sca resolver param>
-    project-tags:
-        <tag>: 
-            container: <image>:<tag>
-            container-ttl: 15m
-            exec-timeout: 10m
-            exec-env:
-                <variable>: value
-                ...
-                <variable>: value
-            exec-params:
-                - <sca resolver param>
-                ...
-                - <sca resolver param>
-    ...
-        <tag>: 
-            container: <image>:<tag>
-            container-ttl: 15m
-            exec-timeout: 10m
-            exec-env:
-                <variable>: value
-                ...
-                <variable>: value
-            exec-params:
-                - <sca resolver param>
-                ...
-                - <sca resolver param>
+    images:
+        default:
+            container: test:gradle
+            containerttl: 5m
+            exectimeout: 10m
+            execenv:
+                FOO: BAZ
+            execparams:
+                - --log-level=Verbose
+        node: 
+            container: test:node-linux
+            execenv:
+                FOO: BAR
+            envpropagate:
+                - MY_ENVIRONMENT_VARIABLE1
+                - MY_ENVIRONMENT_VARIABLE2
+
 ```
 
 
+### Section: `docker`
 
+This section is optional.  It is intended to provide defaults for Docker invocations.
+
+#### `docker.login`
+
+This section is a list of container repositories where a `docker login` command will be executed on CxFlow startup.  If the images tags
+configured in the `resolver` section are not stored in the default Docker public repository, configure the repositories here.
+
+Multiple image repositores can be defined using multiple entries under `docker.login`.
+
+
+```yaml
+
+docker:
+    login:
+        hub.docker.io:
+            username: XXXXXXXXX
+            password: XXXXXXXXX
+        my-host.com:
+            username: XXXXXXXXX
+            password: XXXXXXXXX
+```
+
+Dashes in hostnames can be represented in environment variable names with a double underscore.  Underscores are not valid in DNS hostnames and are therefore not supported.
+
+The above example of the `docker.login` YAML has the equivalent environment variables:
+
+```
+DOCKER_LOGIN_HUB_DOCKER_IO_USERNAME=XXXX
+DOCKER_LOGIN_HUB_DOCKER_IO_PASSWORD=XXXX
+DOCKER_LOGIN_MY__HOST_COM_USERNAME=XXXX
+DOCKER_LOGIN_MY__HOST_COM_PASSWORD=XXXX
+```
+
+
+### Section: `resolver`
+
+This section is used to define parameters for SCAResolver invocation.
+
+#### `resolver.defaults`
+
+This section is optional; it allows for overriding the hard-coded default values if desired.
+
+The timespan values here can be represented by simple value strings with numeric indicators indicating time units such as `h` for hours, `m` for 
+minutes, and `s` for seconds.  Example:
+
+`2h15m30s` means 2 hours, 15 minutes, and 30 seconds
+
+`15m` means 0 hours, 15 minutes, and 0 seconds
+
+An example of the `resolver.defaults` section can be observed below:
+
+```yaml
+
+resolver:
+    defaults:
+        containerttl: 15m
+        exectimeout: 10m
+        defaulttag: default
+
+```
+
+`resolver.defaults.containerttl` - If not provided, this defaults to 1 hour.  This is the length of time a container image will be used after the
+initial `docker pull` command is executed to download the image.  This allows updated images to be retrieved without the need to stop CxFlow.
+
+`resolver.defaults.exectimeout` - If not provided, this defaults to 30 minutes.  This is the amount of time CxFlow will allow the SCAResolver
+image to execute before killing it and assuming failure.
+
+`resolver.defaults.defaulttag` - If not provided, this defaults to the value of `default`.  This is the tag of the image configured in
+`resolver.images` used if an unknown tag is requested.
+
+The above example of the `resolver.defaults` YAML has the equivalent environment variables:
+
+```
+RESOLVER_DEFAULTS_CONTAINTERTTL=15m
+RESOLVER_DEFAULTS_EXECTIMEOUT=10m
+RESOLVER_DEFAULTS_DEFAULTTAG=default
+```
+
+#### `resolver.images`
+
+This section is where the image parameters are set for a container matching a tag that indicates which container image to
+use when invoking SCAResolver.
+
+Each dictionary of key/value pairs configured under the `resolver.images` uses the key value as the image tag.  An example of a configuraton
+for images tagged `default` and `node`.  The containers defined would be instances of [the SCAResolver sandbox](../sandbox) image derived
+from an appropriate build environment base image.
+
+In each of the sections, the `containerttl` and `exectimeout` values are optional.  If not provided, the corresponding values from the 
+`resolver.defaults` section will be used.
+
+
+```yaml
+
+resolver:
+    images:
+        default:
+            container: test:gradle
+            containerttl: 5m
+            exectimeout: 10m
+            execenv:
+                FOO: BAZ
+            execparams:
+                - --log-level=Verbose
+        node: 
+            container: test:node-linux
+            execenv:
+                FOO: BAR
+            envpropagate:
+                - MY_ENVIRONMENT_VARIABLE1
+                - MY_ENVIRONMENT_VARIABLE2
+
+```
+
+
+`resolver.images.<tag>.container` - Required.  The container image tag name associated with the configuration tag that will be resolved as
+part of the CxFlow scan execution.  
+
+`resolver.images.<tag>.containerttl` - Optional.  Uses the corresponding value from `resolver.defaults` if not provided.
+
+`resolver.images.<tag>.exectimeout` - Optional.  Uses the corresponding value from `resolver.defaults` if not provided.
+
+`resolver.images.<tag>.execenv` - Optional.  A dictionary of key/value pairs that are emitted in the environment when the container image is executed.  
+
+`resolver.images.<tag>.execparams` - Optional.  An array of values passed to SCAResolver at the end of all other parameters needed to control the
+execution of SCAResolver.  The values here are mainly intended to pass configuration values to dependency resolution tools invoked by SCAResolver.  Passing other values
+to SCAResolver may cause operational conflicts.
+
+`resolver.images.<tag>.envpropagate` - Optional.  An array of names of environment variables in the CxFlow environment that will be propagated as-is to the 
+executing image environment.
+
+
+The above example of the `resolver.images` YAML has the equivalent environment variables:
+
+```
+RESOLVER_IMAGES_DEFAULT_CONTAINER=test:gradle
+RESOLVER_IMAGES_DEFAULT_CONTAINERTTL=5m
+RESOLVER_IMAGES_DEFAULT_EXECTIMEOUT=10m
+RESOLVER_IMAGES_DEFAULT_EXECENV_FOO=BAZ
+RESOLVER_IMAGES_DEFAULT_EXECPARAMS_1=--log-level=Verbose
+RESOLVER_IMAGES_NODE_CONTAINER=test:node-linux
+RESOLVER_IMAGES_NODE_EXECENV_FOO=BAR
+RESOLVER_IMAGES_NODE_ENVPROPAGATE_1=MY_ENVIRONMENT_VARIABLE1
+RESOLVER_IMAGES_NODE_ENVPROPAGATE_2=MY_ENVIRONMENT_VARIABLE2
+```
 

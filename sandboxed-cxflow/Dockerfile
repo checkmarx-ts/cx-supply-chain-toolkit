@@ -23,9 +23,9 @@ RUN \
     mkdir /yaml && \
     chown root:cxflow /yaml && \
     chmod 770 /yaml && \
-    mkdir -p /resolver/yaml && \
-    chown -R root:cxflow /resolver && \
-    chmod -R 770 /resolver && \
+    mkdir -p /dispatcher/yaml && \
+    chown -R root:cxflow /dispatcher && \
+    chmod -R 770 /dispatcher && \
     umask 0057
 
 COPY --from=checkmarx/cx-flow:latest /app/cx-flow.jar /stage/
@@ -42,12 +42,13 @@ RUN mkdir -p /alt && \
     chown root:cxflow /alt && \
     chmod 770 /alt
 
-COPY --chown=root:cxflow dispatcher/ /dispatcher/
+COPY --chown=cxflow:cxflow dispatcher/ /dispatcher/
 
 WORKDIR /app
 USER cxflow
 
-RUN pip install -r /dispatcher/requirements.txt
+RUN pip install -r /dispatcher/requirements.txt && \
+    rm -f /dispatcher/requirements.txt
 
 CMD ["--web"]
 ENTRYPOINT ["/app/entrypoint.sh"]
