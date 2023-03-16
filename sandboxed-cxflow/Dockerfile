@@ -20,6 +20,9 @@ RUN \
     chmod g+w /var/log/docker && \
     chown root:cxflow /app && \
     chmod 770 /app && \
+    mkdir -p /var/log/dispatcher && \
+    chown root:cxflow /var/log/dispatcher && \
+    chmod 770 //var/log/dispatcher && \
     mkdir /yaml && \
     chown root:cxflow /yaml && \
     chmod 770 /yaml && \

@@ -10,15 +10,18 @@ default_log_config = {
     "version" : 1,
     "handlers" : {
         "console" : {
-            "class" : "logging.StreamHandler",
+            "class" : "logging.handlers.TimedRotatingFileHandler",
             "formatter" : "default",
             "level" : get_log_level(),
-            "stream": "ext://sys.stdout"
+            "filename": "",
+            "utc" : True,
+            "when" : "midnight",
+            "backupCount" : 7
         }
     },
     "formatters" : {
         "default" : {
-            "format" : "[%(asctime)s][%(levelname)s] %(message)s",
+            "format" : "[%(asctime)s][%(name)s][%(levelname)s] %(message)s",
             "datefmt" : "%Y-%m-%dT%H:%M:%S%z"
         }
     },
@@ -30,9 +33,11 @@ default_log_config = {
     }
 }
 
-logging.config.dictConfig(default_log_config)
+def init_logging(logname):
+    default_log_config["handlers"]["console"]["filename"] = f"/var/log/dispatcher/{logname}.log"
+    logging.config.dictConfig(default_log_config)
 
-def locate_yaml():
+def locate_config_yaml():
     loc = Path(os.path.dirname(sys.argv[0]))
 
     yaml_file = None
@@ -52,7 +57,7 @@ def load_yaml(path):
         return {}
 
 def load_default_yaml():
-    return load_yaml(locate_yaml())
+    return load_yaml(locate_config_yaml())
 
 
 SysConfig = ConfigProvider(load_default_yaml())

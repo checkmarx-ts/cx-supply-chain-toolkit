@@ -1,12 +1,12 @@
 import os, re
 from datetime import timedelta
-from dateutil.parser import parse
 from .ImageTagDefinition import ImageTagDefinition
 
 class ConfigProvider:
     def __init__(self, the_yaml):
         self.__yaml = the_yaml
-        self.__tags = {}
+        tag_defs = ConfigProvider._navigate_or_else(self.__yaml, lambda: None)["resolver"]["images"]
+        self.__tags = { tag:self.__load_tag_config(tag) for tag in tag_defs.keys()}
 
 
     @staticmethod
@@ -96,27 +96,42 @@ class ConfigProvider:
 
 
     @staticmethod
-    def __environment_override (orig_value, environment_var):
+    def __environment_override (orig_value, environment_var, convert_func):
         if environment_var in os.environ.keys():
-            return os.environ[environment_var]
+            return convert_func(os.environ[environment_var])
         else:
             return orig_value
 
     @property
-    def docker_logins(self):
-        ret = ConfigProvider._navigate_or_else(self.__yaml, lambda: {} )["docker"]["login"]
-
-        env = ConfigProvider.__find_matching_environment_keys("^DOCKER_LOGIN_.*")
-        for e in env:
-            components = re.match("^DOCKER_LOGIN_(?P<host>.+?)_(?P<variable>USERNAME|PASSWORD)$", e).groupdict()
-            value = os.environ[e]
-            host = ConfigProvider.__translate_environment_hostname(components["host"]).lower()
-            if not host in ret.keys():
-                ret[host] = {}
+    def __docker_logins(self):
+        if not hasattr(self, "_docker_logins"):
             
-            ret[host][components["variable"].lower()] = value
+            ret = ConfigProvider._navigate_or_else(self.__yaml, lambda: {} )["docker"]["login"]
 
-        return ret
+            env = ConfigProvider.__find_matching_environment_keys("^DOCKER_LOGIN_.*")
+            for e in env:
+                components = re.match("^DOCKER_LOGIN_(?P<host>.+?)_(?P<variable>USERNAME|PASSWORD)$", e).groupdict()
+                value = os.environ[e]
+                host = ConfigProvider.__translate_environment_hostname(components["host"]).lower()
+                if not host in ret.keys():
+                    ret[host] = {}
+                
+                ret[host][components["variable"].lower()] = value
+
+            self._docker_logins = ret
+
+        return self._docker_logins
+    
+    @property
+    def docker_registry_servers(self):
+        return self.__docker_logins.keys()
+    
+    def get_docker_registry_username(self, server):
+        return self.__docker_logins[server]["username"]
+
+    def get_docker_registry_password(self, server):
+        return self.__docker_logins[server]["password"]
+
     
 
     @property
@@ -124,8 +139,9 @@ class ConfigProvider:
         if not hasattr(self, "_container_ttl"):
             self._container_ttl =  ConfigProvider.__timedelta_from_string \
                 (str(ConfigProvider._navigate_or_else(self.__yaml, lambda: "1h")["resolver"]["defaults"]["containerttl"]))
-            self._container_ttl = ConfigProvider.__timedelta_from_string \
-                (ConfigProvider.__environment_override(self._container_ttl, "RESOLVER_DEFAULTS_CONTAINERTTL"))
+            
+            self._container_ttl =  ConfigProvider.__environment_override(self._container_ttl, \
+                                        "RESOLVER_DEFAULTS_CONTAINERTTL", lambda x: ConfigProvider.__timedelta_from_string(x) )
        
         return self._container_ttl
 
@@ -182,18 +198,33 @@ class ConfigProvider:
         if len(envpropagate_matches) > 0:
             image_config["envpropagate"] = [os.environ[v] for v in envpropagate_matches]
 
+        ttl = ConfigProvider._navigate_or_else(image_config, lambda: None)["containerttl"]
+        if ttl == None:
+            ttl = self.default_container_ttl
+        else:
+            ttl = ConfigProvider.__timedelta_from_string(ttl)
+
+        timeout = ConfigProvider._navigate_or_else(image_config, lambda: None)["exectimeout"]
+        if timeout == None:
+            timeout = self.default_exec_timeout
+        else:
+            timeout = ConfigProvider.__timedelta_from_string(timeout)
+
         return ImageTagDefinition(image_config["container"],
-                                  ConfigProvider._navigate_or_else(image_config, lambda: self.default_container_ttl)["containerttl"],
-                                  ConfigProvider._navigate_or_else(image_config, lambda: self.default_exec_timeout)["exectimeout"],
+                                  ttl,
+                                  timeout,
                                   ConfigProvider._navigate_or_else(image_config, lambda: {})["execenv"],
                                   ConfigProvider._navigate_or_else(image_config, lambda: [])["execparams"],
                                   ConfigProvider._navigate_or_else(image_config, lambda: [])["envpropagate"])
 
+   
+    def get_image_tags(self):
+        return [c.container for c in self.__tags.values()]
 
-    def container_data_of_tag(self, tag):
-        if not tag in self.__tags.keys():
-            self.__tags[tag] = self.__load_tag_config(tag)
-        
+    def get_tags(self):
+        return self.__tags.keys()
+
+    def get_tag_definition(self, tag):
         return self.__tags[tag]
      
   

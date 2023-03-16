@@ -53,6 +53,12 @@ docker run --runtime=sysbox-runc -d <the CxFlow image tag>
 
 If the `--runtime=sysbox-runc` option is not included and not using the `--privileged` flag, the image will encounter errors when attempting to invoke Docker.
 
+### Logging
+
+CxFlow logs to the console to maintain running compatibility with the official CxFlow image.  Any dispatcher operations are logged in files found on the 
+container in the directory `/var/log/dispatcher`.  The use of logging files for the dispatcher is to avoid the console logs from being corrupted
+by spontaneous log emissions from the dispatcher.
+
 # CxFlow Image Compatibility
 
 All the existing Spring Boot facilities for configuring CxFlow via environment variables work with this image.  Using this image
@@ -145,11 +151,11 @@ An example of the complete YAML configuration can be observed below:
 
 docker:
     login:
-        hub.docker.io:
+        registry-1.docker.io:
             username: XXXXXXXXX
             password: XXXXXXXXX
         ...
-        bar.com:
+        ghcr.io:
             username: XXXXXXXXX
             password: XXXXXXXXX
 
@@ -195,7 +201,10 @@ Multiple image repositores can be defined using multiple entries under `docker.l
 
 docker:
     login:
-        hub.docker.io:
+        registry-1.docker.io:
+            username: XXXXXXXXX
+            password: XXXXXXXXX
+        ghcr.io:
             username: XXXXXXXXX
             password: XXXXXXXXX
         my-host.com:
