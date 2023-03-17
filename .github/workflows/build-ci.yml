@@ -48,9 +48,8 @@ jobs:
     steps:
       - name: Fetch Code
         uses: actions/checkout@v3
-      - name: Check Python
-        run: |
-          which python
-          python --version
-          which pip
+      - name: Install packages
+        run: pip install -r ${{ github.workspace }}/sandboxed-cxflow/dispatcher/requirements.txt
+      - name: Execute Unit Tests
+        run: python -m unittest -v -p 'test_*.py' -s ${{ github.workspace }}/sandboxed-cxflow/dispatcher
 
