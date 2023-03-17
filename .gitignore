@@ -8,6 +8,6 @@ sandbox/*.sh
 
 **/__pycache__
 
-**/.vscode
+**/.vscode/launch.json
 **/.venv
 **/.conda
