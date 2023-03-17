@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3 -O
 from config import SysConfig, init_logging
 from docker_commands import exec_docker_login, exec_docker_pull
 import logging

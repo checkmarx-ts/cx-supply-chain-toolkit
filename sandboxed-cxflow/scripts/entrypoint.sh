@@ -67,6 +67,8 @@ then
     unset SCA_PATH_TO_SCA_RESOLVER
 fi
 
+/dispatcher/Initializer.py
+/dispatcher/ImagePulld.py
 
 java $JAVA_OPTS $JAVA_PROPS $SPRING_PROPS -jar $CXFLOW_JAR $@ $CONFIG_PARAM --sca.path-to-sca-resolver="/dispatcher"
 

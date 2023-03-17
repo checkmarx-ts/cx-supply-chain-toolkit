@@ -43,3 +43,14 @@ jobs:
           cd ${{ github.workspace }}/sandbox/tests
           ./execute-tests-linux-amd64.sh
     
+  dispatcher-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Code
+        uses: actions/checkout@v3
+      - name: Check Python
+        run: |
+          which python
+          python --version
+          which pip
+
