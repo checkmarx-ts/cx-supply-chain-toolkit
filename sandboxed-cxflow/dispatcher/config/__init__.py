@@ -9,7 +9,7 @@ def get_log_level():
 default_log_config = {
     "version" : 1,
     "handlers" : {
-        "console" : {
+        "rotating_file" : {
             "class" : "logging.handlers.TimedRotatingFileHandler",
             "formatter" : "default",
             "level" : get_log_level(),
@@ -17,6 +17,12 @@ default_log_config = {
             "utc" : True,
             "when" : "midnight",
             "backupCount" : 7
+        },
+        "console" : {
+            "class" : "logging.StreamHandler",
+            "formatter" : "default",
+            "level" : get_log_level(),
+            "stream" : "ext://sys.stdout"
         }
     },
     "formatters" : {
@@ -27,14 +33,14 @@ default_log_config = {
     },
     "loggers" : {
         "root" : {
-            "handlers" : ["console"],
+            "handlers" : ["rotating_file"] if not __debug__ else ["console", "rotating_file"],
             "level" : get_log_level()
         }
     }
 }
 
 def init_logging(logname):
-    default_log_config["handlers"]["console"]["filename"] = f"/var/log/dispatcher/{logname}.log"
+    default_log_config["handlers"]["rotating_file"]["filename"] = f"/var/log/dispatcher/{logname}.log"
     logging.config.dictConfig(default_log_config)
 
 def locate_config_yaml():

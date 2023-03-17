@@ -217,7 +217,7 @@ class ConfigProvider:
 
    
     def get_image_tags(self):
-        return [c.container for c in self.__tags.values()]
+        return [str(c.container) for c in self.__tags.values()]
 
     def get_tags(self):
         return self.__tags.keys()
@@ -225,4 +225,6 @@ class ConfigProvider:
     def get_tag_definition(self, tag):
         return self.__tags[tag]
      
+    def get_default_tag_definition(self):
+        return self.__tags[self.default_tag]
   
