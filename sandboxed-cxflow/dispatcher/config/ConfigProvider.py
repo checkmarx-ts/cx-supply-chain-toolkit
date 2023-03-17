@@ -6,7 +6,7 @@ class ConfigProvider:
     def __init__(self, the_yaml):
         self.__yaml = the_yaml
         tag_defs = ConfigProvider._navigate_or_else(self.__yaml, lambda: None)["resolver"]["images"]
-        self.__tags = { tag:self.__load_tag_config(tag) for tag in tag_defs.keys()}
+        self.__tags = { tag:self.__load_tag_config(tag) for tag in tag_defs.keys()} if not tag_defs == None else {}
 
 
     @staticmethod
@@ -56,10 +56,9 @@ class ConfigProvider:
     def _navigate_or_else(yaml_dict, func):
         
         class Wrapper:
-            def __init__(self, obj, end=False):
+            def __init__(self, obj):
                 self.__the_wrapped_object = obj
                 self.__the_func = func
-                self.__the_end = end
 
             def __str__(self):
                 return str(self.__the_wrapped_object)
@@ -81,16 +80,15 @@ class ConfigProvider:
 
             def __getitem__(self, items):
 
-                if self.__the_end:
-                    return self.__the_wrapped_object
-
-                if not items in self.__the_wrapped_object.keys():
-                    return Wrapper(self.__the_func(), True)
-                else:
-                    if type(self.__the_wrapped_object[items]) is dict:
+                if self.__the_wrapped_object is None:
+                    return Wrapper(self.__the_func())
+                
+                if type(self.__the_wrapped_object) is dict:
+                    if items in self.__the_wrapped_object.keys():
                         return ConfigProvider._navigate_or_else(self.__the_wrapped_object[items], self.__the_func)
-                    else:
-                        return self.__the_wrapped_object[items] if not self.__the_wrapped_object[items] is None else self.__the_func()
+                
+                
+                return ConfigProvider._navigate_or_else(self.__the_func(), self.__the_func)
                 
         return Wrapper(yaml_dict)
 
