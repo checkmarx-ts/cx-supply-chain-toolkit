@@ -42,9 +42,10 @@ def locate_config_yaml():
 
     yaml_file = None
 
-    for x in (loc / "yaml").iterdir():
-        if re.search(".*\.y.?ml$", str(x)):
-            yaml_file = x
+    if os.path.exists(loc / "yaml"):
+        for x in (loc / "yaml").iterdir():
+            if re.search(".*\.y.?ml$", str(x)):
+                yaml_file = x
 
     return yaml_file
 

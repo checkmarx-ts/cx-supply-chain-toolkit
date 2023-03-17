@@ -51,5 +51,5 @@ jobs:
       - name: Install packages
         run: pip install -r ${{ github.workspace }}/sandboxed-cxflow/dispatcher/requirements.txt
       - name: Execute Unit Tests
-        run: python -m unittest discover -v -s ${{ github.workspace }}/sandboxed-cxflow/dispatcher
+        run: python -m unittest discover -v -p test_*.py -s ${{ github.workspace }}/sandboxed-cxflow/dispatcher
 
