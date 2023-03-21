@@ -1,7 +1,7 @@
 from pathlib import Path
 import yaml, sys, re, os, logging.config
 from .ConfigProvider import ConfigProvider
-
+from .ConfigAsCode import resolve_tag
 
 def get_log_level():
     return "INFO" if os.getenv('DEBUG') is None else "DEBUG"

@@ -10,10 +10,47 @@ class ScaArgsHandler:
     __r_value_match = re.compile(__groups_fmt.format(cmd=__r_cmd))
     __s_value_match = re.compile(__groups_fmt.format(cmd=__s_cmd))
 
-    __sensitive_cmd = "^-p|^--password|^--proxies|^--cxpassword"
+    # TODO: --cx* params are exploitable path params.  Currently these need to pass through
+    # to SCAResolver since they need to be part of an online or offline scan.
+    __pass_cmd = "^-p|^--password"
+    __creds_cmd = "^-u|^--username|^-a|^--account|--server-url|^--authentication-server-url|^--sca-app-url"
+    __creds_check = re.compile(f"{__pass_cmd}|{__creds_cmd}")
+    __creds_match = re.compile(__groups_fmt.format(cmd=f"{__pass_cmd}|{__creds_cmd}"))
+
+    __sensitive_cmd = f"^--proxies|^--cxpassword|{__pass_cmd}"
     __sensitive_check = re.compile(__sensitive_cmd)
     __sensitive_match = re.compile(__groups_fmt.format(cmd=__sensitive_cmd))
     
+
+    @staticmethod
+    def __filter_args(check_pattern, match_pattern, arg_array):
+        ret = []
+        delete = False
+
+        for arg in arg_array:
+            if delete:
+                delete = False
+                continue
+
+            if not check_pattern.search(arg) is None:
+                result = match_pattern.match(arg)
+                if result is None:
+                    delete = True
+                continue
+            else:
+                ret.append(arg)
+        
+        return ret
+
+
+    @staticmethod
+    def _strip_creds(arg_array):
+        return ScaArgsHandler.__filter_args(ScaArgsHandler.__creds_check, ScaArgsHandler.__creds_match, arg_array)
+
+    @staticmethod
+    def _strip_scan_inputs(arg_array):
+        return ScaArgsHandler.__filter_args(ScaArgsHandler.__s_check, ScaArgsHandler.__s_value_match, arg_array)
+
     @staticmethod
     def __find_match_index(checkspec, value_array):
         for v in value_array:
@@ -39,35 +76,47 @@ class ScaArgsHandler:
         return param_index + 1
 
     def __init__(self, args_array):
-        self.__passthru = args_array[2:]
-        self.__operation = args_array[1]
+        self.__op_args = args_array[2:]
+        self._operation = args_array[1].lower()
 
-
-
-        match self.__operation.lower():
+        match self._operation:
             case "offline" | "online":
-                self.__inpath_index = ScaArgsHandler.__get_index_and_fix_params(ScaArgsHandler.__s_value_match, self.__passthru,
-                                                               ScaArgsHandler.__find_match_index(ScaArgsHandler.__s_check, self.__passthru))
+                self.__inpath_index = ScaArgsHandler.__get_index_and_fix_params(ScaArgsHandler.__s_value_match, self.__op_args,
+                                                               ScaArgsHandler.__find_match_index(ScaArgsHandler.__s_check, self.__op_args))
 
-                self.__outpath_index  = ScaArgsHandler.__get_index_and_fix_params(ScaArgsHandler.__r_value_match, self.__passthru,
-                                                                 ScaArgsHandler.__find_match_index(ScaArgsHandler.__r_check, self.__passthru))
-                
+                self.__outpath_index  = ScaArgsHandler.__get_index_and_fix_params(ScaArgsHandler.__r_value_match, self.__op_args,
+                                                                 ScaArgsHandler.__find_match_index(ScaArgsHandler.__r_check, self.__op_args))
                 self.__requires_tag_resolution = True
 
             case "upload":
-                self.__inpath_index = ScaArgsHandler.__get_index_and_fix_params(ScaArgsHandler.__r_value_match, self.__passthru,
-                                                               ScaArgsHandler.__find_match_index(ScaArgsHandler.__r_check, self.__passthru))
+                self.__inpath_index = ScaArgsHandler.__get_index_and_fix_params(ScaArgsHandler.__r_value_match, self.__op_args,
+                                                               ScaArgsHandler.__find_match_index(ScaArgsHandler.__r_check, self.__op_args))
                 self.__outpath_index = None
 
                 self.__requires_tag_resolution = False
+            
+            case _:
+                raise Exception(f"Operation [{self._operation}] is unknown")
 
+    def __get_operation(self):
+        return self.__op
+    
+    def __set_operation(self, value):
+        self.__op = value
+
+    _operation = property(fget=__get_operation, fset=__set_operation)
+    
+    @property
+    def can_two_stage(self):
+        return self._operation == "online"
+    
     @property
     def requires_tag_resolution(self):
         return self.__requires_tag_resolution
     
     @property
     def input_path(self):
-        return self.__passthru[self.__inpath_index] if not self.__inpath_index is None else None
+        return self.__op_args[self.__inpath_index] if not self.__inpath_index is None else None
     
     @property
     def input_path_index(self):
@@ -75,25 +124,15 @@ class ScaArgsHandler:
 
     @property
     def output_path(self):
-        return self.__passthru[self.__outpath_index] if not self.__outpath_index is None else None
+        return self.__op_args[self.__outpath_index] if not self.__outpath_index is None else None
 
     @property
     def output_path_index(self):
-        return self.__outpath_index if not self.__inpath_index is None else None
+        return self.__outpath_index if not self.__outpath_index is None else None
     
-    def get_modified_params(self, input_loc, output_loc=None):
-        params = [self.__operation] + self.__passthru.copy()
-
-        if not output_loc is None and not self.output_path_index is None:
-            params[self.output_path_index] = output_loc
-
-        params[self.input_path_index] = input_loc
-
-        return params
-    
-    def get_orig_params(self):
-        return [self.__operation] + self.__passthru.copy()
-    
+    def _clone_op_params(self):
+        return self.__op_args.copy()
+   
     def get_sanitized_param_string(self, param_array):
         p_copy = param_array.copy()
         for i in ScaArgsHandler.__find_match_indexes(ScaArgsHandler.__sensitive_check, p_copy):
@@ -101,3 +140,44 @@ class ScaArgsHandler:
             p_copy[mask_index] = "MASKED"
         return p_copy
 
+
+class OfflineOperation(ScaArgsHandler):
+    def __init__(self, args_array, op="offline"):
+        super().__init__(ScaArgsHandler._strip_creds(args_array))
+        self._operation = op
+    
+    def get_io_remapped_args(self, input_loc, output_loc):
+        params = self._clone_op_params()
+        params[self.output_path_index] = output_loc
+        params[self.input_path_index] = input_loc
+        return [self._operation] + params
+
+class OnlineOperation(OfflineOperation):
+    def __init__(self, args_array):
+        super().__init__(ScaArgsHandler._strip_creds(args_array), "online")
+
+
+class UploadOperation(ScaArgsHandler):
+    def __init__(self, args_array):
+        super().__init__(args_array)
+        self._operation = "upload"
+
+    def get_remapped_args(self, input_loc):
+        params = self._clone_op_params()
+        params[self.input_path_index] = input_loc
+        return [self._operation] + ScaArgsHandler._strip_scan_inputs(params)
+
+
+class PassthroughOperation(ScaArgsHandler):
+    def __init__(self, args_array):
+        super().__init__(args_array)
+
+    def get_io_remapped_args(self, input_loc, output_loc):
+        params = self._clone_op_params()
+        if not self.output_path_index is None:
+            params[self.output_path_index] = output_loc
+        
+        if not self.input_path_index is None:
+            params[self.input_path_index] = input_loc
+            
+        return [self._operation] + params

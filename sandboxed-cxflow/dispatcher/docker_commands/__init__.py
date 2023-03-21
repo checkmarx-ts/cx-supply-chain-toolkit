@@ -7,6 +7,8 @@ def __exec(command, params, stdin=None):
     stdout = None
 
     __log.debug(f"Executing docker command {command}")
+    
+    proc = None
 
     try:
         proc = subprocess.run(["docker", command] + params, stdin=stdin, check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -25,16 +27,28 @@ def __exec(command, params, stdin=None):
                 prev = s.tell()
                 log = s.readline()
                 __log.debug(log)
-
+        
+    return proc.returncode
     
 
 
 
 def exec_docker_login(server, username, password, *arg, **kwargs):
     params = ["-u", username, "-p", password, server]
-    __exec("login", params)
+    return __exec("login", params)
 
 def exec_docker_pull(tag):
     __log.info(f"Pulling docker image with tag {tag}")
     params = ["-q", tag]
-    __exec("pull", params)
+    return __exec("pull", params)
+
+def exec_docker_run(tag, environment, docker_params, app_params=[]):
+    default_params = ["--rm"]
+    env_opts = []
+    for k in environment.keys():
+        env_opts.append("--env")
+        env_opts.append(f"{k}={environment[k]}")
+
+    __log.debug(['docker', 'run'] + default_params + docker_params + environment + [tag] + app_params)
+
+

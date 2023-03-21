@@ -213,7 +213,8 @@ class ConfigProvider:
                                   timeout,
                                   ConfigProvider._navigate_or_else(image_config, lambda: {})["execenv"],
                                   ConfigProvider._navigate_or_else(image_config, lambda: [])["execparams"],
-                                  ConfigProvider._navigate_or_else(image_config, lambda: [])["envpropagate"])
+                                  ConfigProvider._navigate_or_else(image_config, lambda: [])["envpropagate"],
+                                  ConfigProvider._navigate_or_else(image_config, lambda: [])["dockerparams"])
 
    
     def get_image_tags(self):

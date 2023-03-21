@@ -311,7 +311,9 @@ part of the CxFlow scan execution.
 
 `resolver.images.<tag>.exectimeout` - Optional.  Uses the corresponding value from `resolver.defaults` if not provided.
 
-`resolver.images.<tag>.execenv` - Optional.  A dictionary of key/value pairs that are emitted in the environment when the container image is executed.  
+`resolver.images.<tag>.execenv` - Optional.  A dictionary of key/value pairs that are emitted in the environment when the container image is executed.  Entries
+with key values that match keys defined in `resolver.images.<tag>.envpropagate` will have the value overwritten by the value found in the propagated environment
+value.
 
 `resolver.images.<tag>.execparams` - Optional.  An array of values passed to SCAResolver at the end of all other parameters needed to control the
 execution of SCAResolver.  The values here are mainly intended to pass configuration values to dependency resolution tools invoked by SCAResolver.  Passing other values
@@ -319,6 +321,8 @@ to SCAResolver may cause operational conflicts.
 
 `resolver.images.<tag>.envpropagate` - Optional.  An array of names of environment variables in the CxFlow environment that will be propagated as-is to the 
 executing image environment.
+
+`resolver.images.<tag>.dockerparams` - Optional. An array of values passed to a `docker run` command when the container is executed.
 
 
 The above example of the `resolver.images` YAML has the equivalent environment variables:
