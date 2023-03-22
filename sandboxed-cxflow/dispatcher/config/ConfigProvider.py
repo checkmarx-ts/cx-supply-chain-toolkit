@@ -60,6 +60,9 @@ class ConfigProvider:
                 self.__the_wrapped_object = obj
                 self.__the_func = func
 
+            def __add__(self, other):
+                return self.__the_wrapped_object + other
+            
             def __str__(self):
                 return str(self.__the_wrapped_object)
             
@@ -86,6 +89,9 @@ class ConfigProvider:
                 if type(self.__the_wrapped_object) is dict:
                     if items in self.__the_wrapped_object.keys():
                         return ConfigProvider._navigate_or_else(self.__the_wrapped_object[items], self.__the_func)
+
+                if type(self.__the_wrapped_object) is list:
+                    return self.__the_wrapped_object[items]
                 
                 
                 return ConfigProvider._navigate_or_else(self.__the_func(), self.__the_func)

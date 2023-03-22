@@ -1,54 +1,45 @@
 import subprocess
-import logging, io
+import logging, io, docker
+from urllib3.util import Url
 
 __log = logging.getLogger("docker_commands")
 
-def __exec(command, params, stdin=None):
-    stdout = None
+__client = docker.from_env()
 
-    __log.debug(f"Executing docker command {command}")
     
-    proc = None
-
-    try:
-        proc = subprocess.run(["docker", command] + params, stdin=stdin, check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        stdout = proc.stdout
-        __log.info(f"Docker command {command} execution success with exit code {proc.returncode}")
-    except subprocess.CalledProcessError as ex:
-        __log.error(f"Docker command {command} execution failed with exit code {ex.returncode}")
-        stdout = ex.stdout
-
-    if __log.isEnabledFor(logging.DEBUG):
-        with io.TextIOWrapper(io.BytesIO(stdout)) as s:
-            prev = -1
-            while True:
-                if s.tell() == prev:
-                    break
-                prev = s.tell()
-                log = s.readline()
-                __log.debug(log)
-        
-    return proc.returncode
-    
-
-
-
-def exec_docker_login(server, username, password, *arg, **kwargs):
-    params = ["-u", username, "-p", password, server]
-    return __exec("login", params)
+def exec_docker_login(server, username, password):
+    return __client.login(username=username, password=password, registry=str(Url(scheme="https", host=server)))
 
 def exec_docker_pull(tag):
     __log.info(f"Pulling docker image with tag {tag}")
-    params = ["-q", tag]
-    return __exec("pull", params)
+    image_spec = tag.split(':')
+    if len(image_spec) > 0:
+        try:
+            img = __client.images.pull(image_spec[0], tag=image_spec[1] if len(image_spec) > 0 else None)
+            return img
+        except docker.errors.APIError as e:
+            __log.warn(f"Unable to pull image with tag {tag}.")
+            __log.debug(e)
+    return None
 
-def exec_docker_run(tag, environment, docker_params, app_params=[]):
-    default_params = ["--rm"]
+def exec_docker_run(tag, docker_params, timeout, app_params=[]):
     env_opts = []
-    for k in environment.keys():
-        env_opts.append("--env")
-        env_opts.append(f"{k}={environment[k]}")
 
-    __log.debug(['docker', 'run'] + default_params + docker_params + environment + [tag] + app_params)
+    # TODO: docker_params will be the kwargs sent to the API.  Change docs, reference
+    # https://docker-py.readthedocs.io/en/stable/containers.html#docker.models.containers.ContainerCollection.run
+
+    # TODO: Check docker_params environment as a dict or list.  Append as appropriate.
+    # if not environment is None:
+    #     for k in environment.keys():
+    #         env_opts.append("--env")
+    #         env_opts.append(f"{k}={environment[k]}")
+
+    # TODO: check if "detach" is in docker params, set it to True or add it as True
+
+
+
+
+
+    return 0
 
 

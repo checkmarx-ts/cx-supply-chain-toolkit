@@ -322,7 +322,7 @@ to SCAResolver may cause operational conflicts.
 `resolver.images.<tag>.envpropagate` - Optional.  An array of names of environment variables in the CxFlow environment that will be propagated as-is to the 
 executing image environment.
 
-`resolver.images.<tag>.dockerparams` - Optional. An array of values passed to a `docker run` command when the container is executed.
+`resolver.images.<tag>.dockerparams` - Optional. An a key/value dictionary that follows the `**kwargs` key/value pairs supported in the [Docker Python API](https://docker-py.readthedocs.io/en/stable/containers.html#docker.models.containers.ContainerCollection.run) `run` method.
 
 
 The above example of the `resolver.images` YAML has the equivalent environment variables:

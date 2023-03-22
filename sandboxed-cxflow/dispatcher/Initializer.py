@@ -1,9 +1,11 @@
 #!/usr/bin/python3 -O
 from config import SysConfig, init_logging
+init_logging("initializer")
+
+
 from docker_commands import exec_docker_login, exec_docker_pull
 import logging
 
-init_logging("initializer")
 
 __log = logging.getLogger("Initializer")
 
