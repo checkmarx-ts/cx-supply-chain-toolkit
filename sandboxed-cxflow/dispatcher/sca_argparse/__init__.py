@@ -75,9 +75,9 @@ class ScaArgsHandler:
             param_array.insert(param_index + 1, result_dict["value"])
         return param_index + 1
 
-    def __init__(self, args_array):
+    def __init__(self, args_array, operation=None):
         self.__op_args = args_array[2:]
-        self._operation = args_array[1].lower()
+        self._operation = args_array[1].lower() if operation is None else operation
 
         match self._operation:
             case "offline" | "online":
@@ -140,29 +140,33 @@ class ScaArgsHandler:
             p_copy[mask_index] = "MASKED"
         return p_copy
 
+class OnlineOperation(ScaArgsHandler):
+    def __init__(self, args_array, op="online"):
+        super().__init__(args_array, op)
 
-class OfflineOperation(ScaArgsHandler):
-    def __init__(self, args_array, op="offline"):
-        super().__init__(ScaArgsHandler._strip_creds(args_array))
-        self._operation = op
-    
     def get_io_remapped_args(self, input_loc, output_loc):
+        # TODO: handle cases when there is a file specified
+        # TODO: optionally generate a unique filename
         params = self._clone_op_params()
         params[self.output_path_index] = output_loc
         params[self.input_path_index] = input_loc
         return [self._operation] + params
 
-class OnlineOperation(OfflineOperation):
-    def __init__(self, args_array):
-        super().__init__(ScaArgsHandler._strip_creds(args_array), "online")
+
+class OfflineOperation(OnlineOperation):
+    def __init__(self, args_array, op="offline"):
+        super().__init__(ScaArgsHandler._strip_creds(args_array), op)
+    
+
 
 
 class UploadOperation(ScaArgsHandler):
     def __init__(self, args_array):
-        super().__init__(args_array)
-        self._operation = "upload"
+        super().__init__(args_array, "upload")
 
     def get_remapped_args(self, input_loc):
+        # TODO: handle cases when there is a file specified
+        # TODO: optionally generate a unique filename
         params = self._clone_op_params()
         params[self.input_path_index] = input_loc
         return [self._operation] + ScaArgsHandler._strip_scan_inputs(params)

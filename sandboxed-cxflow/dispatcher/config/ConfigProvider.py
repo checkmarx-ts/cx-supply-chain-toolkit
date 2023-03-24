@@ -2,10 +2,11 @@ import os, re
 from datetime import timedelta
 from .ImageTagDefinition import ImageTagDefinition
 
+
 class ConfigProvider:
     def __init__(self, the_yaml):
         self.__yaml = the_yaml
-        tag_defs = ConfigProvider._navigate_or_else(self.__yaml, lambda: None)["resolver"]["images"]
+        tag_defs = ConfigProvider._navigate_or_else(self.__yaml, lambda: None, ["resolver", "images"])
         self.__tags = { tag:self.__load_tag_config(tag) for tag in tag_defs.keys()} if not tag_defs == None else {}
 
 
@@ -53,50 +54,21 @@ class ConfigProvider:
 
 
     @staticmethod
-    def _navigate_or_else(yaml_dict, func):
+    def _navigate_or_else(yaml_dict, func, list):
+        if list is None or yaml_dict is None:
+            return func()
+        elif len(list) == 0:
+            return yaml_dict
+        elif list[0] in yaml_dict.keys() and type(yaml_dict[list[0]]) is dict:
+            return ConfigProvider._navigate_or_else(yaml_dict[list[0]], func, list[1:])
+        elif not list[0] in yaml_dict.keys():
+            return func()
+        else:
+            return yaml_dict[list[0]]
+            
         
-        class Wrapper:
-            def __init__(self, obj):
-                self.__the_wrapped_object = obj
-                self.__the_func = func
 
-            def __add__(self, other):
-                return self.__the_wrapped_object + other
-            
-            def __str__(self):
-                return str(self.__the_wrapped_object)
-            
-            def __len__(self):
-                return len(self.__the_wrapped_object)
-            
-            def __eq__(self, other):
-                return self.__the_wrapped_object == other
-            
-            def __getattr__(self, name):
-                if not hasattr(self.__the_wrapped_object, name):
-                    raise AttributeError(name)
-                else:
-                    return getattr(self.__the_wrapped_object, name)
 
-            def __setitem__(self, key, value):
-                self.__the_wrapped_object[key] = value
-
-            def __getitem__(self, items):
-
-                if self.__the_wrapped_object is None:
-                    return Wrapper(self.__the_func())
-                
-                if type(self.__the_wrapped_object) is dict:
-                    if items in self.__the_wrapped_object.keys():
-                        return ConfigProvider._navigate_or_else(self.__the_wrapped_object[items], self.__the_func)
-
-                if type(self.__the_wrapped_object) is list:
-                    return self.__the_wrapped_object[items]
-                
-                
-                return ConfigProvider._navigate_or_else(self.__the_func(), self.__the_func)
-                
-        return Wrapper(yaml_dict)
 
 
     @staticmethod
@@ -110,7 +82,7 @@ class ConfigProvider:
     def __docker_logins(self):
         if not hasattr(self, "_docker_logins"):
             
-            ret = ConfigProvider._navigate_or_else(self.__yaml, lambda: {} )["docker"]["login"]
+            ret = ConfigProvider._navigate_or_else(self.__yaml, lambda: {}, ["docker","login"])
 
             env = ConfigProvider.__find_matching_environment_keys("^DOCKER_LOGIN_.*")
             for e in env:
@@ -142,7 +114,7 @@ class ConfigProvider:
     def default_container_ttl(self):
         if not hasattr(self, "_container_ttl"):
             self._container_ttl =  ConfigProvider.__timedelta_from_string \
-                (str(ConfigProvider._navigate_or_else(self.__yaml, lambda: "1h")["resolver"]["defaults"]["containerttl"]))
+                (str(ConfigProvider._navigate_or_else(self.__yaml, lambda: "1h", ["resolver","defaults","containerttl"])))
             
             self._container_ttl =  ConfigProvider.__environment_override(self._container_ttl, \
                                         "RESOLVER_DEFAULTS_CONTAINERTTL", lambda x: ConfigProvider.__timedelta_from_string(x) )
@@ -153,20 +125,20 @@ class ConfigProvider:
     def default_exec_timeout(self):
         if not hasattr(self, "_exec_timeout"):
             self._exec_timeout =  ConfigProvider.__timedelta_from_string \
-                (str(ConfigProvider._navigate_or_else(self.__yaml, lambda: "30m")["resolver"]["defaults"]["exectimeout"]))
+                (str(ConfigProvider._navigate_or_else(self.__yaml, lambda: "30m", ["resolver","defaults","exectimeout"])))
        
         return self._exec_timeout
 
     @property
     def default_tag(self):
         if not hasattr(self, "_default_tag"):
-            self._default_tag =  str(ConfigProvider._navigate_or_else(self.__yaml, lambda: "default")["resolver"]["defaults"]["defaulttag"])
+            self._default_tag =  str(ConfigProvider._navigate_or_else(self.__yaml, lambda: "default", ["resolver","defaults","defaulttag"]))
        
         return self._default_tag
     
 
     def __load_tag_config(self, tag):
-        image_configs = ConfigProvider._navigate_or_else(self.__yaml, lambda: None)["resolver"]["images"]
+        image_configs = ConfigProvider._navigate_or_else(self.__yaml, lambda: None, ["resolver", "images"])
         image_config = image_configs[tag]
 
         if image_config == None and self.default_tag in image_configs.keys():
@@ -202,13 +174,13 @@ class ConfigProvider:
         if len(envpropagate_matches) > 0:
             image_config["envpropagate"] = [os.environ[v] for v in envpropagate_matches]
 
-        ttl = ConfigProvider._navigate_or_else(image_config, lambda: None)["containerttl"]
+        ttl = ConfigProvider._navigate_or_else(image_config, lambda: None, ["containerttl"])
         if ttl == None:
             ttl = self.default_container_ttl
         else:
             ttl = ConfigProvider.__timedelta_from_string(ttl)
 
-        timeout = ConfigProvider._navigate_or_else(image_config, lambda: None)["exectimeout"]
+        timeout = ConfigProvider._navigate_or_else(image_config, lambda: None,["exectimeout"])
         if timeout == None:
             timeout = self.default_exec_timeout
         else:
@@ -217,10 +189,10 @@ class ConfigProvider:
         return ImageTagDefinition(image_config["container"],
                                   ttl,
                                   timeout,
-                                  ConfigProvider._navigate_or_else(image_config, lambda: {})["execenv"],
-                                  ConfigProvider._navigate_or_else(image_config, lambda: [])["execparams"],
-                                  ConfigProvider._navigate_or_else(image_config, lambda: [])["envpropagate"],
-                                  ConfigProvider._navigate_or_else(image_config, lambda: [])["dockerparams"])
+                                  ConfigProvider._navigate_or_else(image_config, lambda: {}, ["execenv"]),
+                                  ConfigProvider._navigate_or_else(image_config, lambda: [],["execparams"]),
+                                  ConfigProvider._navigate_or_else(image_config, lambda: [], ["envpropagate"]),
+                                  ConfigProvider._navigate_or_else(image_config, lambda: [], ["dockerparams"]))
 
    
     def get_image_tags(self):

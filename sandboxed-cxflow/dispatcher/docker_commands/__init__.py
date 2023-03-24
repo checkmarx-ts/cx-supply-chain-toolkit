@@ -1,5 +1,4 @@
-import subprocess
-import logging, io, docker
+import logging, docker
 from urllib3.util import Url
 
 __log = logging.getLogger("docker_commands")
@@ -23,23 +22,25 @@ def exec_docker_pull(tag):
     return None
 
 def exec_docker_run(tag, docker_params, timeout, app_params=[]):
-    env_opts = []
+    if docker_params is None:
+        docker_params = {"detach" : True}
+    else:
+        docker_params["detach"] = True
 
-    # TODO: docker_params will be the kwargs sent to the API.  Change docs, reference
-    # https://docker-py.readthedocs.io/en/stable/containers.html#docker.models.containers.ContainerCollection.run
+    ret_code = {"StatusCode" : 8192}
 
-    # TODO: Check docker_params environment as a dict or list.  Append as appropriate.
-    # if not environment is None:
-    #     for k in environment.keys():
-    #         env_opts.append("--env")
-    #         env_opts.append(f"{k}={environment[k]}")
+    inst = __client.containers.run(tag, command=app_params, **docker_params)
+    __log.info(f"Container [{inst.name}] started with id [{inst.short_id}]")
+    try:
+        ret_code = inst.wait(timeout=timeout.total_seconds())
+    except inst.exceptions.ReadTimeout:
+        inst.kill()
+    finally:
+        if not inst is None:
+            for line in inst.logs(stream=True):
+                __log.debug(line.decode('utf-8'))
 
-    # TODO: check if "detach" is in docker params, set it to True or add it as True
-
-
-
-
-
-    return 0
+            inst.remove(v=True, force=True)
+    return ret_code['StatusCode']
 
 

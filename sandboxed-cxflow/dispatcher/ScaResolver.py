@@ -1,10 +1,13 @@
 #!/usr/bin/python3 -O
 from config import SysConfig, init_logging, resolve_tag
+init_logging("dispatcher")
+
+
 import sca_argparse, sys, logging, os
 from docker_commands import exec_docker_run
 from pathlib import PurePath
+from copy import deepcopy
 
-init_logging("dispatcher")
 
 __log = logging.getLogger("ScaResolver")
 
@@ -23,31 +26,30 @@ def __convert_kv_dict_to_list(d):
 
 def exec_single_stage(tag, args_array, volume_map_tuples=[]):
     containerdef = SysConfig.get_tag_definition(tag)
+    dockerparams = deepcopy(containerdef.dockerparams)
 
     env_dict = merge_with_environment(containerdef.execenv, containerdef.envpropagate)
 
-    if "environment" in containerdef.dockerparams.keys():
-        if type(containerdef.dockerparams["environment"]) is dict:
-            containerdef.dockerparams["environment"].update(env_dict)
-        elif type(containerdef.dockerparams["environment"]) is list:
-            containerdef.dockerparams["environment"].append(__convert_kv_dict_to_list(env_dict))
+    if "environment" in dockerparams.keys():
+        if type(dockerparams["environment"]) is dict:
+            dockerparams["environment"].update(env_dict)
+        elif type(dockerparams["environment"]) is list:
+            dockerparams["environment"].append(__convert_kv_dict_to_list(env_dict))
     else:
-        containerdef.dockerparams["environment"] = env_dict
+        dockerparams["environment"] = env_dict
 
-    volume_maps = []
-    for t in volume_map_tuples:
-        volume_maps.append(f"{PurePath(t[0])}:{PurePath(t[1])}")
+    volume_maps = (f"{PurePath(t[0])}:{PurePath(t[1])}" for t in volume_map_tuples)
 
-    if "volumes" in containerdef.dockerparams.keys():
-        if type(containerdef.dockerparams["volumes"]) is list:
-            containerdef.dockerparams["volumes"] = containerdef.dockerparams["volumes"] + volume_maps
-        elif type(containerdef.dockerparams["volumes"]) is dict:
+    if "volumes" in dockerparams.keys():
+        if type(dockerparams["volumes"]) is list:
+            dockerparams["volumes"] = dockerparams["volumes"] + list(volume_maps)
+        elif type(dockerparams["volumes"]) is dict:
             for t in volume_map_tuples:
-                containerdef.dockerparams["volumes"][str(PurePath(t[0]))] = { "bind" : str(PurePath(t[1])), "mode" : "rw"}
+                dockerparams["volumes"][str(PurePath(t[0]))] = { "bind" : str(PurePath(t[1])), "mode" : "rw"}
     else:
-        containerdef.dockerparams["volumes"] = volume_maps
+        dockerparams["volumes"] = list(volume_maps)
    
-    return exec_docker_run(containerdef.container, containerdef.dockerparams, containerdef.exectimeout, containerdef.execparams + args_array )
+    return exec_docker_run(containerdef.container, dockerparams, containerdef.exectimeout, args_array + containerdef.execparams)
 
 def exec_two_stage(tag):
     offline = sca_argparse.OfflineOperation(sys.argv)
