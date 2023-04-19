@@ -66,7 +66,7 @@ def exec_two_stage(tag):
         __log.debug(f"Offline operation successful")
 
     upload = sca_argparse.UploadOperation(sys.argv)
-    upload_args = upload.get_remapped_args("/sandbox/input")
+    upload_args = upload.get_io_remapped_args("/sandbox/input", "/sandbox/output", offline.out_filename)
     upload_map_tuples = [(offline.output_path, "/sandbox/input")]
     __log.debug(f"Executing Upload operation with args: {upload.get_sanitized_param_string(upload_args)}")
     result = exec_single_stage(tag, upload_args, upload_map_tuples)
@@ -82,8 +82,17 @@ target_tag = resolve_tag(probe.input_path, SysConfig.default_tag, ".cxsca")
 
 __log.info(f"Executing with tag [{target_tag}]")
 
-if probe.can_two_stage:
+if probe.can_two_stage and SysConfig.enable_twostage:
     sys.exit(exec_two_stage(target_tag))
 else:
-    sys.exit(exec_single_stage(target_tag, sca_argparse.PassthroughOperation(sys.argv).get_io_remapped_args("/sandbox/input", "/sandbox/output")))
+    op = sca_argparse.PassthroughOperation(sys.argv)
+    maps = []
+
+    if not op.input_path is None:
+        maps.append((op.input_path, "/sandbox/input"))
+
+    if not op.output_path is None:
+        maps.append((op.output_path, "/sandbox/output"))
+
+    sys.exit(exec_single_stage(target_tag, op.get_io_remapped_args("/sandbox/input", "/sandbox/output"), maps))
 

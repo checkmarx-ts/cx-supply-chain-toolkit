@@ -228,6 +228,19 @@ DOCKER_LOGIN_MY__HOST_COM_PASSWORD=XXXX
 
 This section is used to define parameters for SCAResolver invocation.
 
+#### `resolver.twostage`
+
+This is optional, defaults to `true`.
+
+If `true`, an `online` SCAResolver scan will be split into two stages:
+
+* The first stage is an `offline` scan.  When invoking the offline scan, credentials for the SCA server are stripped from the command.  This executes the dependency
+resolution without leaving credentials exposed to any scripts that execute as part of the dependency resolution.
+* The second stage is an `upload` where the dependency resolution results are uploaded to the SCA server.
+
+If set to `false`, an `online` scan will be invoked in a single step.
+
+
 #### `resolver.defaults`
 
 This section is optional; it allows for overriding the hard-coded default values if desired.

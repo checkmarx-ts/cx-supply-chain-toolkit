@@ -1,4 +1,5 @@
-import re
+import re, uuid
+from pathlib import Path
 
 class ScaArgsHandler:
 
@@ -10,8 +11,6 @@ class ScaArgsHandler:
     __r_value_match = re.compile(__groups_fmt.format(cmd=__r_cmd))
     __s_value_match = re.compile(__groups_fmt.format(cmd=__s_cmd))
 
-    # TODO: --cx* params are exploitable path params.  Currently these need to pass through
-    # to SCAResolver since they need to be part of an online or offline scan.
     __pass_cmd = "^-p|^--password"
     __creds_cmd = "^-u|^--username|^-a|^--account|--server-url|^--authentication-server-url|^--sca-app-url"
     __creds_check = re.compile(f"{__pass_cmd}|{__creds_cmd}")
@@ -20,6 +19,13 @@ class ScaArgsHandler:
     __sensitive_cmd = f"^--proxies|^--cxpassword|{__pass_cmd}"
     __sensitive_check = re.compile(__sensitive_cmd)
     __sensitive_match = re.compile(__groups_fmt.format(cmd=__sensitive_cmd))
+
+    __report_path_cmd = "^--report-path"
+    __report_path_check = re.compile(__report_path_cmd)
+    __report_path_match = re.compile(__groups_fmt.format(cmd=__report_path_cmd))
+    __report_all_cmd = "^--report-.*"
+    __report_cmd_check = re.compile(__report_all_cmd)
+    __report_cmd_match = re.compile(__groups_fmt.format(cmd=__report_all_cmd))
     
 
     @staticmethod
@@ -52,6 +58,10 @@ class ScaArgsHandler:
         return ScaArgsHandler.__filter_args(ScaArgsHandler.__s_check, ScaArgsHandler.__s_value_match, arg_array)
 
     @staticmethod
+    def _strip_report_args(arg_array):
+        return ScaArgsHandler.__filter_args(ScaArgsHandler.__report_cmd_check, ScaArgsHandler.__report_cmd_match, arg_array)
+
+    @staticmethod
     def __find_match_index(checkspec, value_array):
         for v in value_array:
             if not checkspec.search(v) is None:
@@ -68,6 +78,10 @@ class ScaArgsHandler:
 
     @staticmethod
     def __get_index_and_fix_params(match, param_array, param_index):
+        
+        if param_index is None or param_array is None:
+            return None
+        
         result = match.match(param_array[param_index])
         if not result is None:
             result_dict = result.groupdict()
@@ -97,7 +111,9 @@ class ScaArgsHandler:
             
             case _:
                 raise Exception(f"Operation [{self._operation}] is unknown")
-
+        
+        self.__reportpath_index =  ScaArgsHandler.__get_index_and_fix_params(ScaArgsHandler.__report_path_match, self.__op_args,
+                                                                 ScaArgsHandler.__find_match_index(ScaArgsHandler.__report_path_check, self.__op_args))
     def __get_operation(self):
         return self.__op
     
@@ -114,6 +130,7 @@ class ScaArgsHandler:
     def requires_tag_resolution(self):
         return self.__requires_tag_resolution
     
+
     @property
     def input_path(self):
         return self.__op_args[self.__inpath_index] if not self.__inpath_index is None else None
@@ -130,6 +147,14 @@ class ScaArgsHandler:
     def output_path_index(self):
         return self.__outpath_index if not self.__outpath_index is None else None
     
+    @property
+    def report_path_index(self):
+        return self.__reportpath_index if not self.__reportpath_index is None else None
+
+    @property
+    def report_path(self):
+        return self.__op_args[self.__reportpath_index] if not self.__reportpath_index is None else None
+    
     def _clone_op_params(self):
         return self.__op_args.copy()
    
@@ -140,48 +165,97 @@ class ScaArgsHandler:
             p_copy[mask_index] = "MASKED"
         return p_copy
 
-class OnlineOperation(ScaArgsHandler):
-    def __init__(self, args_array, op="online"):
+class IOOperation(ScaArgsHandler):
+    def __init__(self, args_array, op=None):
         super().__init__(args_array, op)
+        pass
+
+    @staticmethod
+    def remap_path(orig_path, desired_path):
+        parsed_path = Path(orig_path)
+        if len(parsed_path.suffix) > 0:
+            return Path(desired_path) / parsed_path.name
+        else:
+            return desired_path
+
 
     def get_io_remapped_args(self, input_loc, output_loc):
-        # TODO: handle cases when there is a file specified
-        # TODO: optionally generate a unique filename
         params = self._clone_op_params()
-        params[self.output_path_index] = output_loc
-        params[self.input_path_index] = input_loc
+
+        if not self.output_path_index is None:
+            params[self.output_path_index] = IOOperation.remap_path(params[self.output_path_index], output_loc)
+
+        if not self.input_path_index is None:
+            params[self.input_path_index] = IOOperation.remap_path(params[self.input_path_index], input_loc)
+
+        if not self.report_path_index is None:
+            params[self.report_path_index] = IOOperation.remap_path(params[self.report_path_index], output_loc)
+
         return [self._operation] + params
+
+
+class OnlineOperation(IOOperation):
+    def __init__(self, args_array, op="online"):
+        super().__init__(args_array, op)
 
 
 class OfflineOperation(OnlineOperation):
     def __init__(self, args_array, op="offline"):
+        # TODO: Need to make a filename for the output file when executing if no file name is specified.
+        # TODO: generate a unique filename if no filename is specified.
         super().__init__(ScaArgsHandler._strip_creds(args_array), op)
-    
+        self.__out_filename = None
+        self.__should_delete = False
+
+    def get_io_remapped_args(self, input_loc, output_loc):
+        parsed_outpath = Path(output_loc)
+        if not len(parsed_outpath.suffix) > 0:
+            self.__out_filename = f"{str(uuid.uuid4())}.json"
+            parsed_outpath /= self.__out_filename
+            self.__should_delete = True
+        else:
+            self.__out_filename = parsed_outpath.name
+
+        return ScaArgsHandler._strip_report_args(super().get_io_remapped_args(input_loc, str(parsed_outpath)))
+
+    @property
+    def out_filename(self):
+        return self.__out_filename
+
+    @property
+    def should_delete(self):
+        return self.__should_delete
 
 
-
-class UploadOperation(ScaArgsHandler):
+class UploadOperation(IOOperation):
     def __init__(self, args_array):
         super().__init__(args_array, "upload")
 
-    def get_remapped_args(self, input_loc):
-        # TODO: handle cases when there is a file specified
-        # TODO: optionally generate a unique filename
+    def get_io_remapped_args(self, input_loc, output_loc, in_filename):
         params = self._clone_op_params()
-        params[self.input_path_index] = input_loc
+
+        if not self.input_path_index is None:
+            parsed_inpath = Path(input_loc)
+            
+            if len(parsed_inpath.suffix) == 0:
+                parsed_inpath /= in_filename
+                params[self.input_path_index] = IOOperation.remap_path(params[self.input_path_index], str(parsed_inpath))
+
+        return ScaArgsHandler._strip_scan_inputs(super().get_io_remapped_args(params[self.input_path_index], output_loc))
+
+    def get_remapped_args(self, input_loc, filename):
+        params = self._clone_op_params()
+
+        if not self.input_path_index is None:
+            parsed_inpath = Path(input_loc)
+            
+            if len(parsed_inpath.suffix) == 0:
+                parsed_inpath /= filename
+
+            params[self.input_path_index] = IOOperation.remap_path(params[self.input_path_index], str(parsed_inpath))
         return [self._operation] + ScaArgsHandler._strip_scan_inputs(params)
 
 
-class PassthroughOperation(ScaArgsHandler):
+class PassthroughOperation(IOOperation):
     def __init__(self, args_array):
         super().__init__(args_array)
-
-    def get_io_remapped_args(self, input_loc, output_loc):
-        params = self._clone_op_params()
-        if not self.output_path_index is None:
-            params[self.output_path_index] = output_loc
-        
-        if not self.input_path_index is None:
-            params[self.input_path_index] = input_loc
-            
-        return [self._operation] + params

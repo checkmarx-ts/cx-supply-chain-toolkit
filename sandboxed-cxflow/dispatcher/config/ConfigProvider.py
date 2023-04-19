@@ -72,9 +72,9 @@ class ConfigProvider:
 
 
     @staticmethod
-    def __environment_override (orig_value, environment_var, convert_func):
+    def __environment_override (orig_value, environment_var, convert_func=None):
         if environment_var in os.environ.keys():
-            return convert_func(os.environ[environment_var])
+            return convert_func(os.environ[environment_var]) if not convert_func is None else os.environ[environment_var]
         else:
             return orig_value
 
@@ -109,7 +109,6 @@ class ConfigProvider:
         return self.__docker_logins[server]["password"]
 
     
-
     @property
     def default_container_ttl(self):
         if not hasattr(self, "_container_ttl"):
@@ -126,6 +125,8 @@ class ConfigProvider:
         if not hasattr(self, "_exec_timeout"):
             self._exec_timeout =  ConfigProvider.__timedelta_from_string \
                 (str(ConfigProvider._navigate_or_else(self.__yaml, lambda: "30m", ["resolver","defaults","exectimeout"])))
+
+            self._exec_timeout =  ConfigProvider.__environment_override(self._exec_timeout, "RESOLVER_DEFAULTS_EXECTIMEOUT")
        
         return self._exec_timeout
 
@@ -133,8 +134,26 @@ class ConfigProvider:
     def default_tag(self):
         if not hasattr(self, "_default_tag"):
             self._default_tag =  str(ConfigProvider._navigate_or_else(self.__yaml, lambda: "default", ["resolver","defaults","defaulttag"]))
+            self._default_tag =  ConfigProvider.__environment_override(self._default_tag, "RESOLVER_DEFAULTS_DEFAULTTAG")
        
         return self._default_tag
+
+
+    @staticmethod
+    def __str_to_bool(s):
+        if s.isnumeric():
+            return bool(int(s))
+        else:
+            return True if s.lower() == 'true' else False
+
+
+    @property
+    def enable_twostage(self):
+        if not hasattr(self, "_twostage"):
+            self._twostage =  bool(ConfigProvider._navigate_or_else(self.__yaml, lambda: True, ["resolver","twostage"]))
+            self._twostage =  ConfigProvider.__environment_override(self._twostage, "RESOLVER_TWOSTAGE", ConfigProvider.__str_to_bool)
+       
+        return self._twostage
     
 
     def __load_tag_config(self, tag):
@@ -192,7 +211,7 @@ class ConfigProvider:
                                   ConfigProvider._navigate_or_else(image_config, lambda: {}, ["execenv"]),
                                   ConfigProvider._navigate_or_else(image_config, lambda: [],["execparams"]),
                                   ConfigProvider._navigate_or_else(image_config, lambda: [], ["envpropagate"]),
-                                  ConfigProvider._navigate_or_else(image_config, lambda: [], ["dockerparams"]))
+                                  ConfigProvider._navigate_or_else(image_config, lambda: {}, ["dockerparams"]))
 
    
     def get_image_tags(self):
