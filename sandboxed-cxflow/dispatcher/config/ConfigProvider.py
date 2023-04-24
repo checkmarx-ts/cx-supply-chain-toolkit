@@ -120,6 +120,7 @@ class ConfigProvider:
        
         return self._container_ttl
 
+
     @property
     def default_exec_timeout(self):
         if not hasattr(self, "_exec_timeout"):
@@ -138,6 +139,13 @@ class ConfigProvider:
        
         return self._default_tag
 
+    @property
+    def default_delete(self):
+        if not hasattr(self, "_default_delete"):
+            self._default_delete =  bool(ConfigProvider._navigate_or_else(self.__yaml, lambda: True, ["resolver","defaults","delete"]))
+            self._default_delete =  bool(ConfigProvider.__environment_override(self._default_delete, "RESOLVER_DEFAULTS_DELETE"))
+       
+        return self._default_delete
 
     @staticmethod
     def __str_to_bool(s):

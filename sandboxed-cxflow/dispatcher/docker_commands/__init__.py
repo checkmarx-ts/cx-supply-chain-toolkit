@@ -21,7 +21,7 @@ def exec_docker_pull(tag):
             __log.debug(e)
     return None
 
-def exec_docker_run(tag, docker_params, timeout, app_params=[]):
+def exec_docker_run(tag, docker_params, timeout, remove, app_params=[]):
     if docker_params is None:
         docker_params = {"detach" : True}
     else:
@@ -40,7 +40,8 @@ def exec_docker_run(tag, docker_params, timeout, app_params=[]):
             for line in inst.logs(stream=True):
                 __log.debug(line.decode('utf-8'))
 
-            inst.remove(v=True, force=True)
+            if remove:
+                inst.remove(v=True, force=True)
     return ret_code['StatusCode']
 
 

@@ -261,6 +261,7 @@ resolver:
         containerttl: 15m
         exectimeout: 10m
         defaulttag: default
+        delete: False
 
 ```
 
@@ -273,12 +274,16 @@ image to execute before killing it and assuming failure.
 `resolver.defaults.defaulttag` - If not provided, this defaults to the value of `default`.  This is the tag of the image configured in
 `resolver.images` used if an unknown tag is requested.
 
+`resolver.defaults.delete` - If not provided, this defaults to the value of `True`.  Setting this to `False` will prevent the container image created
+for the scan from being deleted.
+
 The above example of the `resolver.defaults` YAML has the equivalent environment variables:
 
 ```
 RESOLVER_DEFAULTS_CONTAINTERTTL=15m
 RESOLVER_DEFAULTS_EXECTIMEOUT=10m
 RESOLVER_DEFAULTS_DEFAULTTAG=default
+RESOLVER_DEFAULTS_DELETE=False
 ```
 
 #### `resolver.images`

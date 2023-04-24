@@ -1,5 +1,5 @@
 #!/usr/bin/python3 -O
-from config import SysConfig, init_logging, resolve_tag
+from config import SysConfig, init_logging, resolve_tag, Consts
 init_logging("dispatcher")
 
 
@@ -49,12 +49,12 @@ def exec_single_stage(tag, args_array, volume_map_tuples=[]):
     else:
         dockerparams["volumes"] = list(volume_maps)
    
-    return exec_docker_run(containerdef.container, dockerparams, containerdef.exectimeout, args_array + containerdef.execparams)
+    return exec_docker_run(containerdef.container, dockerparams, containerdef.exectimeout, SysConfig.default_delete, args_array + containerdef.execparams)
 
 def exec_two_stage(tag):
     offline = sca_argparse.OfflineOperation(sys.argv)
-    offline_args = offline.get_io_remapped_args("/sandbox/input", "/sandbox/output")
-    offline_map_tuples = [(offline.input_path, "/sandbox/input"), (offline.output_path, "/sandbox/output")]
+    offline_args = offline.get_io_remapped_args(Consts.INPATH, Consts.OUTPATH)
+    offline_map_tuples = [(offline.input_path, Consts.INPATH), (offline.output_path, Consts.OUTPATH)]
     
     __log.debug(f"Executing Offline operation with args: {offline.get_sanitized_param_string(offline_args)}")
     
@@ -66,8 +66,8 @@ def exec_two_stage(tag):
         __log.debug(f"Offline operation successful")
 
     upload = sca_argparse.UploadOperation(sys.argv)
-    upload_args = upload.get_io_remapped_args("/sandbox/input", "/sandbox/output", offline.out_filename)
-    upload_map_tuples = [(offline.output_path, "/sandbox/input")]
+    upload_args = upload.get_io_remapped_args(Consts.INPATH, Consts.OUTPATH, offline.out_filename)
+    upload_map_tuples = [(offline.output_path, Consts.INPATH)]
     __log.debug(f"Executing Upload operation with args: {upload.get_sanitized_param_string(upload_args)}")
     result = exec_single_stage(tag, upload_args, upload_map_tuples)
     if not result == 0:
@@ -78,7 +78,7 @@ def exec_two_stage(tag):
     return result
 
 probe = sca_argparse.ScaArgsHandler(sys.argv)
-target_tag = resolve_tag(probe.input_path, SysConfig.default_tag, ".cxsca")
+target_tag = resolve_tag(probe.input_path, SysConfig.default_tag, Consts.CAC_FILE)
 
 __log.info(f"Executing with tag [{target_tag}]")
 
@@ -89,10 +89,10 @@ else:
     maps = []
 
     if not op.input_path is None:
-        maps.append((op.input_path, "/sandbox/input"))
+        maps.append((op.input_path, Consts.INPATH))
 
     if not op.output_path is None:
-        maps.append((op.output_path, "/sandbox/output"))
+        maps.append((op.output_path, Consts.OUTPATH))
 
-    sys.exit(exec_single_stage(target_tag, op.get_io_remapped_args("/sandbox/input", "/sandbox/output"), maps))
+    sys.exit(exec_single_stage(target_tag, op.get_io_remapped_args(Consts.INPATH, Consts.OUTPATH), maps))
 

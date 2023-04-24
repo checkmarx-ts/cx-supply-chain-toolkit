@@ -9,6 +9,8 @@ RUN mkdir -p /sandbox/scalogs && \
     chmod -R 750 /sandbox/input && \
     mkdir -p /sandbox/output && \
     chmod -R 730 /sandbox/output && \
+    mkdir -p /sandbox/report && \
+    chmod -R 730 /sandbox/report && \
     mkdir -p /sandbox/resolver/cache && \
     chmod -R 760 /sandbox/resolver/cache
 
@@ -60,7 +62,7 @@ RUN apk add -q libstdc++ bash && \
     [[ "$(getent passwd ${USER_ID})" = "" ]] && {  adduser -D -s /sbin/nologin -g $TARGET_GROUP resolver ; TARGET_NAME=resolver ; } || TARGET_NAME=$(getent passwd ${USER_ID} | cut -d ':' -f1) && \
     for cert in $(ls /cacerts); do cat /cacerts/$cert >> /etc/ssl/certs/ca-certificates.crt; done && \
     echo IMAGE BUILD UID:GID: $TARGET_NAME:$TARGET_GROUP as $USER_ID:$GROUP_ID && \
-    chown -R root:$TARGET_GROUP /sandbox/output /sandbox/input /sandbox/scalogs /sandbox/resolver
+    chown -R root:$TARGET_GROUP /sandbox/output /sandbox/input /sandbox/scalogs /sandbox/resolver /sandbox/report
 
 USER  ${USER_ID}:${GROUP_ID}
 
@@ -86,7 +88,7 @@ RUN \
     chmod -R 750 /sandbox/resolver && \
     for cert in $(ls /cacerts); do cat /cacerts/$cert >> /etc/ssl/certs/ca-certificates.crt; done && \
     echo IMAGE BUILD UID:GID: $TARGET_NAME:$TARGET_GROUP as $USER_ID:$GROUP_ID && \
-    chown -R root:$TARGET_GROUP /sandbox/output /sandbox/input /sandbox/scalogs /sandbox/resolver
+    chown -R root:$TARGET_GROUP /sandbox/output /sandbox/input /sandbox/scalogs /sandbox/resolver /sandbox/report
 
 USER  ${USER_ID}:${GROUP_ID}
 
@@ -106,7 +108,7 @@ RUN \
     cp /cacerts/* /etc/pki/ca-trust/source/anchors/ && \
     update-ca-trust extract && \
     echo IMAGE BUILD UID:GID: $TARGET_NAME:$TARGET_GROUP as $USER_ID:$GROUP_ID && \
-    chown -R root:$TARGET_GROUP /sandbox/output /sandbox/input /sandbox/scalogs /sandbox/resolver
+    chown -R root:$TARGET_GROUP /sandbox/output /sandbox/input /sandbox/scalogs /sandbox/resolver /sandbox/report
 
 USER  ${USER_ID}:${GROUP_ID}
 
@@ -127,6 +129,6 @@ RUN yum install -y shadow-utils which && \
     cp /cacerts/* /etc/pki/ca-trust/source/anchors/ && \
     update-ca-trust extract && \
     echo IMAGE BUILD UID:GID: $TARGET_NAME:$TARGET_GROUP as $USER_ID:$GROUP_ID && \
-    chown -R root:sca /sandbox/output /sandbox/input /sandbox/scalogs /sandbox/resolver
+    chown -R root:sca /sandbox/output /sandbox/input /sandbox/scalogs /sandbox/resolver /sandbox/report
 
 USER  ${USER_ID}:${GROUP_ID}
