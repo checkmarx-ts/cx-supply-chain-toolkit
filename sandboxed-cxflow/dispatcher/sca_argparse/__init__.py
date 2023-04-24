@@ -1,4 +1,4 @@
-import re, uuid
+import re, uuid, os
 from pathlib import Path
 
 class ScaArgsHandler:
@@ -201,8 +201,6 @@ class OnlineOperation(IOOperation):
 
 class OfflineOperation(OnlineOperation):
     def __init__(self, args_array, op="offline"):
-        # TODO: Need to make a filename for the output file when executing if no file name is specified.
-        # TODO: generate a unique filename if no filename is specified.
         super().__init__(ScaArgsHandler._strip_creds(args_array), op)
         self.__out_filename = None
         self.__should_delete = False
@@ -217,6 +215,11 @@ class OfflineOperation(OnlineOperation):
             self.__out_filename = parsed_outpath.name
 
         return ScaArgsHandler._strip_report_args(super().get_io_remapped_args(input_loc, str(parsed_outpath)))
+    
+    def __del__(self):
+        if self.__should_delete and not self.__out_filename is None and os.path.exists(self.__out_filename):
+            os.remove(self.__out_filename)
+            
 
     @property
     def out_filename(self):
@@ -242,18 +245,6 @@ class UploadOperation(IOOperation):
                 params[self.input_path_index] = IOOperation.remap_path(params[self.input_path_index], str(parsed_inpath))
 
         return ScaArgsHandler._strip_scan_inputs(super().get_io_remapped_args(params[self.input_path_index], output_loc))
-
-    def get_remapped_args(self, input_loc, filename):
-        params = self._clone_op_params()
-
-        if not self.input_path_index is None:
-            parsed_inpath = Path(input_loc)
-            
-            if len(parsed_inpath.suffix) == 0:
-                parsed_inpath /= filename
-
-            params[self.input_path_index] = IOOperation.remap_path(params[self.input_path_index], str(parsed_inpath))
-        return [self._operation] + ScaArgsHandler._strip_scan_inputs(params)
 
 
 class PassthroughOperation(IOOperation):
