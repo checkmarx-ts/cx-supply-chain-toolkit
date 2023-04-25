@@ -27,11 +27,17 @@ def daemon_loop():
     schedule.run()
 
 if not __debug__:
+    __log.debug("Creating Process object")
     proc = psutil.Process(os.getpid())
+    __log.debug("Process object created")
 
+    
+    __log.debug(f"Getting open file descriptors for [{str(proc)}]")
     keep_fds = [f.fd for f in proc.open_files()]
+    __log.debug(f"{len(keep_fds)} file descriptors found.")
 
-    with daemon.DaemonContext(files_preserve=keep_fds):
+    __log.debug("Starting daemon loop")
+    with daemon.DaemonContext(files_preserve=keep_fds, detach_process=True):
         daemon_loop()
 else:
     daemon_loop()

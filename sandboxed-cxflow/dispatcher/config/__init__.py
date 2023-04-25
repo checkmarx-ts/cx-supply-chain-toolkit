@@ -33,7 +33,7 @@ default_log_config = {
     },
     "loggers" : {
         "root" : {
-            "handlers" : ["rotating_file"] if not __debug__ else ["console", "rotating_file"],
+            "handlers" : ["console", "rotating_file"],
             "level" : get_log_level()
         }
     }

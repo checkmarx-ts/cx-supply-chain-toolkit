@@ -9,7 +9,7 @@ umask 0047
 
 [ "$1" = "_VERSIONONLY_" ] && { getCxFlowJarVersion $CXFLOW_JAR ; exit 0 ; }
 
-[ ! -v NO_DOCKERD ] && sudo dockerd > /var/log/docker/docker.log 2>&1 & || :
+[ ! -v NO_DOCKERD ] && $(sudo dockerd > /var/log/docker/docker.log 2>&1 &) || :
 
 cat banner.txt
 
@@ -67,8 +67,14 @@ then
     unset SCA_PATH_TO_SCA_RESOLVER
 fi
 
+bannerBegin "Running Dispatcher Initializer"
 /dispatcher/Initializer.py
+bannerEnd "Running Dispatcher Initializer"
+
+
+bannerBegin "Starting ImagePulld"
 /dispatcher/ImagePulld.py
+bannerEnd "Starting ImagePulld"
 
 java $JAVA_OPTS $JAVA_PROPS $SPRING_PROPS -jar $CXFLOW_JAR $@ $CONFIG_PARAM --sca.path-to-sca-resolver="/dispatcher"
 

@@ -49,7 +49,7 @@ apt install -y jq docker.io ./sysbox-ce_0.5.2-0.linux_amd64.deb
 ```
 
 
-Running CxFlow is performed with this command:
+Running CxFlow is performed with a command similar to this:
 
 ```
 docker run --runtime=sysbox-runc -d <the CxFlow image tag>
