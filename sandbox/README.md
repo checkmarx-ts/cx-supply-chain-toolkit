@@ -64,6 +64,7 @@ To properly interface with the container, some directories are intended to be ma
 |`/sandbox/scalogs`| No | Used to write SCAResolver logs. |
 |`/sandbox/input`| Yes | This is where the input should be mapped for SCAResolver inputs. |
 |`/sandbox/output`| Yes | This is the directory where SCAResolver results files will be written.|
+|`/sandbox/report`| No | This is the directory where SCAResolver report will be written.|
 
 Performing a `docker run` for an SCAResolver image passes the arguments through to SCAResolver.  You can modify the `default-config/Configuration.yml` to set default options for SCAResolver.  In the [How to Build](#how-to-build) section, a method is described to allow you to choose a non-default `Configuration.yml` at the time of build.
 

@@ -179,7 +179,7 @@ class IOOperation(ScaArgsHandler):
             return desired_path
 
 
-    def get_io_remapped_args(self, input_loc, output_loc):
+    def get_io_remapped_args(self, input_loc, output_loc, report_loc=None):
         params = self._clone_op_params()
 
         if not self.output_path_index is None:
@@ -188,8 +188,8 @@ class IOOperation(ScaArgsHandler):
         if not self.input_path_index is None:
             params[self.input_path_index] = IOOperation.remap_path(params[self.input_path_index], input_loc)
 
-        if not self.report_path_index is None:
-            params[self.report_path_index] = IOOperation.remap_path(params[self.report_path_index], output_loc)
+        if not report_loc is None and not self.report_path_index is None:
+            params[self.report_path_index] = IOOperation.remap_path(params[self.report_path_index], report_loc)
 
         return [self._operation] + params
 
@@ -217,8 +217,10 @@ class OfflineOperation(OnlineOperation):
         return ScaArgsHandler._strip_report_args(super().get_io_remapped_args(input_loc, str(parsed_outpath)))
     
     def __del__(self):
-        if self.__should_delete and not self.__out_filename is None and os.path.exists(self.__out_filename):
-            os.remove(self.__out_filename)
+        if self.__should_delete and not self.__out_filename is None:
+            outfile = Path(self.output_path) / self.__out_filename
+            if os.path.exists(outfile):
+                os.remove(outfile)
             
 
     @property
@@ -234,7 +236,7 @@ class UploadOperation(IOOperation):
     def __init__(self, args_array):
         super().__init__(args_array, "upload")
 
-    def get_io_remapped_args(self, input_loc, output_loc, in_filename):
+    def get_io_remapped_args(self, input_loc, output_loc, report_loc, in_filename):
         params = self._clone_op_params()
 
         if not self.input_path_index is None:
@@ -244,7 +246,7 @@ class UploadOperation(IOOperation):
                 parsed_inpath /= in_filename
                 params[self.input_path_index] = IOOperation.remap_path(params[self.input_path_index], str(parsed_inpath))
 
-        return ScaArgsHandler._strip_scan_inputs(super().get_io_remapped_args(params[self.input_path_index], output_loc))
+        return ScaArgsHandler._strip_scan_inputs(super().get_io_remapped_args(params[self.input_path_index], output_loc, report_loc))
 
 
 class PassthroughOperation(IOOperation):
