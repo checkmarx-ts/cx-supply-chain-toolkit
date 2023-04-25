@@ -31,6 +31,11 @@ The stage names are intended to indicate compatibility with configuration steps 
 
 There is currently no support for Windows base images.
 
+If you don't know the OS of your base image, one method that may work is to run the following command:
+
+`docker run --rm -it --entrypoint=cat <image tag> /etc/os-release`
+
+
 ## Build Examples
 
 Building with the Gradle 8.0 Alpine with JDK19 container as a base image uses the target `resolver-alpine`:

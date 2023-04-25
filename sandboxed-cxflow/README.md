@@ -5,6 +5,10 @@ of this image is to allow the execution of SCAResolver in a (mostly) sandboxed, 
 
 This is a work in progress.
 
+To build the repackaged CxFlow image, something similar to the following build command can be executed:
+
+`docker build -t cxflow-dispatcher:latest .`
+
 # Docker in Docker
 
 This image works by invoking Docker inside the Docker container.  This means the deployment options may be somewhat limited given that
