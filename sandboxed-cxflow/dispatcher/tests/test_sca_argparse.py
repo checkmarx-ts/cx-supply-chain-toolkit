@@ -8,7 +8,6 @@ class sca_argparse_tests(unittest.TestCase):
     __outpath = "output"
     __mod_inpath = "mod/input"
     __mod_outpath = "mod/output"
-
     
     def test_canary(self):
         self.assertTrue(True)
@@ -112,22 +111,22 @@ class sca_argparse_tests(unittest.TestCase):
 
     def test_upload_input_param_modified_short(self):
         o = sca_argparse.UploadOperation(["", "upload", "-r", sca_argparse_tests.__inpath])
-        mod = o.get_io_remapped_args(sca_argparse_tests.__mod_inpath, sca_argparse_tests.__mod_outpath, "foo")
+        mod = o.get_io_remapped_args(sca_argparse_tests.__mod_inpath, sca_argparse_tests.__mod_outpath, sca_argparse_tests.__mod_outpath, "foo")
         self.assertEqual(o.input_path_index, TestUtil.index_of_begin_path(mod[1:], sca_argparse_tests.__mod_inpath))
 
     def test_upload_input_param_modified_long(self):
         o = sca_argparse.UploadOperation(["", "upload", "--resolver-result-path", sca_argparse_tests.__inpath])
-        mod = o.get_io_remapped_args(sca_argparse_tests.__mod_inpath, sca_argparse_tests.__mod_outpath, "foo")
+        mod = o.get_io_remapped_args(sca_argparse_tests.__mod_inpath, sca_argparse_tests.__mod_outpath, sca_argparse_tests.__mod_outpath, "foo")
         self.assertEqual(o.input_path_index, TestUtil.index_of_begin_path(mod[1:], sca_argparse_tests.__mod_inpath))
 
     def test_upload_output_param_none_short(self):
         o = sca_argparse.UploadOperation(["", "upload", "-r", sca_argparse_tests.__inpath])
-        mod = o.get_io_remapped_args(sca_argparse_tests.__mod_inpath, sca_argparse_tests.__mod_outpath, "foo")
+        mod = o.get_io_remapped_args(sca_argparse_tests.__mod_inpath, sca_argparse_tests.__mod_outpath, sca_argparse_tests.__mod_outpath, "foo")
         self.assertIsNone(o.output_path)
 
     def test_upload_output_param_none_long(self):
         o = sca_argparse.UploadOperation(["", "upload", "--resolver-result-path", sca_argparse_tests.__inpath])
-        mod = o.get_io_remapped_args(sca_argparse_tests.__mod_inpath, sca_argparse_tests.__mod_outpath, "foo")
+        mod = o.get_io_remapped_args(sca_argparse_tests.__mod_inpath, sca_argparse_tests.__mod_outpath, sca_argparse_tests.__mod_outpath, "foo")
         self.assertIsNone(o.output_path)
 
 
