@@ -1,5 +1,6 @@
 import re, uuid, os
 from pathlib import Path
+import tempfile
 
 class ScaArgsHandler:
 
@@ -142,11 +143,30 @@ class ScaArgsHandler:
     @property
     def output_path(self):
         return self.__op_args[self.__outpath_index] if not self.__outpath_index is None else None
+    
+
+    def _set_results_path_for_output(self, value):
+        if self.__outpath_index is None:
+            self.__op_args.append ("-r")
+            self.__op_args.append(value)
+            self.__outpath_index = len(self.__op_args) - 1
+        else:
+            self.__op_args[self.__outpath_index] = value
+
+    def _set_results_path_for_input(self, value):
+        if self.__inpath_index is None:
+            self.__op_args.append ("-r")
+            self.__op_args.append(value)
+            self.__inpath_index = len(self.__op_args) - 1
+        else:
+            self.__op_args[self.__inpath_index] = value
+
 
     @property
     def output_path_index(self):
         return self.__outpath_index if not self.__outpath_index is None else None
-    
+
+
     @property
     def report_path_index(self):
         return self.__reportpath_index if not self.__reportpath_index is None else None
@@ -204,6 +224,9 @@ class OfflineOperation(OnlineOperation):
         super().__init__(ScaArgsHandler._strip_creds(args_array), op)
         self.__out_filename = None
         self.__should_delete = False
+        
+        if self.output_path_index is None:
+            self._set_results_path_for_output(tempfile.gettempdir())
 
     def get_io_remapped_args(self, input_loc, output_loc):
         parsed_outpath = Path(output_loc)
@@ -235,6 +258,9 @@ class OfflineOperation(OnlineOperation):
 class UploadOperation(IOOperation):
     def __init__(self, args_array):
         super().__init__(args_array, "upload")
+
+        if self.input_path_index is None:
+            self._set_results_path_for_input(tempfile.gettempdir())
 
     def get_io_remapped_args(self, input_loc, output_loc, report_loc, in_filename):
         params = self._clone_op_params()
