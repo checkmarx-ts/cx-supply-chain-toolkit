@@ -1,19 +1,20 @@
 #!/usr/bin/python3 -O
 from config import SysConfig, init_logging, resolve_tag, Consts
+import logging
 init_logging("dispatcher")
+__log = logging.getLogger("ScaResolver")
+__log.debug("ScaResolver dispatcher is executing")
 
 
-import sca_argparse, sys, logging, os
+import sca_argparse, sys, os
 from docker_commands import exec_docker_run
 from pathlib import PurePath
 from copy import deepcopy
 
 
-__log = logging.getLogger("ScaResolver")
-
 sca_args = sca_argparse.ScaArgsHandler(sys.argv)
 
-__log.debug(f"Dispatcher ScaResolver invoked with: {sca_args.get_sanitized_param_string(sca_args._clone_op_params())}")
+__log.debug(f"Dispatcher ScaResolver invoked op [{sca_args.operation}] with: {sca_args.get_sanitized_param_string(sca_args._clone_op_params())}")
 
 def merge_with_environment(provided_env, propagate_env_keys):
     for pk in list(propagate_env_keys):

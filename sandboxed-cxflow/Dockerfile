@@ -1,12 +1,14 @@
-FROM amazoncorretto:11-al2022-jdk
+FROM amazoncorretto:11-al2023-jdk
 
 ENV JAVA_OPTS="-Xms512m -Xmx2048m"
 ENV JAVA_PROPS="-Djava.security.egd=file:/dev/./urandom"
 ENV SPRING_PROPS="-Dspring.profiles.active=web"
 
-RUN yum install -y shadow-utils which unzip wget git docker sudo passwd pip && \
+RUN yum install -y shadow-utils which unzip wget git docker sudo passwd python3.11 python3.11-pip && \
     yum clean all && \
-    rm -rf /var/cache/yum
+    rm -rf /var/cache/yum && \
+    rm /usr/bin/python3 && \
+    ln -s /usr/bin/python3.11 /usr/bin/python3
 
 COPY etc/ /etc/
 
@@ -50,9 +52,11 @@ COPY --chown=cxflow:cxflow dispatcher/ /dispatcher/
 WORKDIR /app
 USER cxflow
 
-RUN pip install -r /dispatcher/requirements.txt && \
+RUN pip-3.11 install -r /dispatcher/requirements.txt && \
     rm -f /dispatcher/requirements.txt && \
-    rm -rf /dispatcher/tests
+    rm -rf /dispatcher/tests && \
+    mkdir /dispatcher/logs
+
 
 CMD ["--web"]
 ENTRYPOINT ["/app/entrypoint.sh"]

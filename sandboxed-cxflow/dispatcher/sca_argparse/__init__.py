@@ -122,6 +122,10 @@ class ScaArgsHandler:
         self.__op = value
 
     _operation = property(fget=__get_operation, fset=__set_operation)
+
+    @property
+    def operation(self):
+        return self._operation
     
     @property
     def can_two_stage(self):
