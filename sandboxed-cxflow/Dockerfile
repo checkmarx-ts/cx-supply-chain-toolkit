@@ -51,7 +51,8 @@ WORKDIR /app
 USER cxflow
 
 RUN pip install -r /dispatcher/requirements.txt && \
-    rm -f /dispatcher/requirements.txt
+    rm -f /dispatcher/requirements.txt && \
+    rm -rf /dispatcher/tests
 
 CMD ["--web"]
 ENTRYPOINT ["/app/entrypoint.sh"]
