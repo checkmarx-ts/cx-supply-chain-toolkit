@@ -1,9 +1,11 @@
 #!/usr/bin/python3 -O
-import logging
-from config import SysConfig, init_logging
+from applogging import init_logging
 init_logging("imagepulld")
+
+import logging
 __log = logging.getLogger("daemon")
 
+from config import SysConfig
 import daemon, time, sched, psutil, os
 from docker_commands import exec_docker_pull
 

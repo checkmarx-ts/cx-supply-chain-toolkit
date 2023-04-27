@@ -14,7 +14,7 @@ def exec_docker_pull(tag):
     image_spec = tag.split(':')
     if len(image_spec) > 0:
         try:
-            img = __client.images.pull(image_spec[0], tag=image_spec[1] if len(image_spec) > 0 else None)
+            img = __client.images.pull(image_spec[0], tag=image_spec[1] if len(image_spec) > 1 else None)
             return img
         except docker.errors.APIError as e:
             __log.warn(f"Unable to pull image with tag {tag}.")
