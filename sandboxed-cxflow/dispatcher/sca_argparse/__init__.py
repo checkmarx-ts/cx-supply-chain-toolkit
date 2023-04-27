@@ -197,9 +197,16 @@ class IOOperation(ScaArgsHandler):
     def remap_path(orig_path, desired_path):
         parsed_path = Path(orig_path)
         if len(parsed_path.suffix) > 0:
-            return str(Path(desired_path) / parsed_path.name)
+            check_dir = parsed_path.parent
+            ret_path = str(Path(desired_path) / parsed_path.name)
         else:
-            return desired_path
+            check_dir = orig_path
+            ret_path = desired_path
+
+        if not os.path.exists(check_dir):
+            os.mkdir(check_dir)
+        
+        return ret_path
 
 
     def get_io_remapped_args(self, input_loc, output_loc, report_loc=None):
