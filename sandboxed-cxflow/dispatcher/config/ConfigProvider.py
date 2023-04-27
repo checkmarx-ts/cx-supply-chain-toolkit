@@ -1,9 +1,13 @@
+import logging
+
 import os, re
 from datetime import timedelta
 from .ImageTagDefinition import ImageTagDefinition
 
 
 class ConfigProvider:
+    __log = logging.getLogger("ConfigProvider")
+    
     def __init__(self, the_yaml):
         self.__yaml = the_yaml
         tag_defs = ConfigProvider._navigate_or_else(self.__yaml, lambda: None, ["resolver", "images"])
@@ -229,8 +233,17 @@ class ConfigProvider:
         return self.__tags.keys()
 
     def get_tag_definition(self, tag):
+        if not tag in self.__tags.keys():
+            ConfigProvider.__log.warn(f"Tag [{tag}] not found, using default tag of [{self.default_tag}]")
+            return self.get_default_tag_definition()
+        
         return self.__tags[tag]
      
     def get_default_tag_definition(self):
+        if not self.default_tag in self.__tags.keys():
+            msg = f"Default tag [{self.default_tag}] is not defined, can't continue."
+            ConfigProvider.__log.error(msg)
+            raise RuntimeError(msg)
+        
         return self.__tags[self.default_tag]
   

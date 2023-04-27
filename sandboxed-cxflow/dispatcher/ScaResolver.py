@@ -1,7 +1,11 @@
 #!/usr/bin/python3 -O
-from config import SysConfig, init_logging, resolve_tag, Consts
-import logging
+import logging, traceback
+from applogging import init_logging
 init_logging("dispatcher")
+
+from pathlib import Path
+
+from config import SysConfig, resolve_tag, Consts
 __log = logging.getLogger("ScaResolver")
 __log.debug("ScaResolver dispatcher is executing")
 
@@ -25,17 +29,23 @@ def merge_with_environment(provided_env, propagate_env_keys):
 def __convert_kv_dict_to_list(d):
     return [f"{k}={d[k]}" for k in d.keys()]
 
+def __strip_file_part(path):
+    p = Path(path)
+    if len(p.suffix) == 0:
+        return path
+    else:
+        return str(p.parent)
 
 def __make_tuple_map(inpath, outpath, reportpath):
     m = []
     if not inpath is None:
-        m.append((inpath, Consts.INPATH))
+        m.append((__strip_file_part(inpath), Consts.INPATH))
 
     if not outpath is None:
-        m.append((outpath, Consts.OUTPATH))
+        m.append((__strip_file_part(outpath), Consts.OUTPATH))
 
     if not reportpath is None:
-        m.append((reportpath, Consts.REPORTPATH))
+        m.append((__strip_file_part(reportpath), Consts.REPORTPATH))
 
     return m
 
@@ -97,11 +107,19 @@ target_tag = resolve_tag(probe.input_path, SysConfig.default_tag, Consts.CAC_FIL
 
 __log.info(f"Executing with tag [{target_tag}]")
 
-if probe.can_two_stage and SysConfig.enable_twostage:
-    sys.exit(exec_two_stage(target_tag))
-else:
-    op = sca_argparse.PassthroughOperation(sys.argv)
-    maps = __make_tuple_map(op.input_path, op.output_path, op.report_path)
+try:
+        
+    if probe.can_two_stage and SysConfig.enable_twostage:
+        __log.debug("Executing as two stage.")
+        sys.exit(exec_two_stage(target_tag))
+    else:
+        __log.debug("Executing as single stage.")
+        op = sca_argparse.PassthroughOperation(sys.argv)
+        maps = __make_tuple_map(op.input_path, op.output_path, op.report_path)
 
-    sys.exit(exec_single_stage(target_tag, op.get_io_remapped_args(Consts.INPATH, Consts.OUTPATH, Consts.REPORTPATH), maps))
+        sys.exit(exec_single_stage(target_tag, op.get_io_remapped_args(Consts.INPATH, Consts.OUTPATH, Consts.REPORTPATH), maps))
 
+except Exception as ex:
+    __log.error(ex)
+    __log.error(traceback.format_exc())
+    sys.exit(4)

@@ -192,13 +192,12 @@ class ScaArgsHandler:
 class IOOperation(ScaArgsHandler):
     def __init__(self, args_array, op=None):
         super().__init__(args_array, op)
-        pass
 
     @staticmethod
     def remap_path(orig_path, desired_path):
         parsed_path = Path(orig_path)
         if len(parsed_path.suffix) > 0:
-            return Path(desired_path) / parsed_path.name
+            return str(Path(desired_path) / parsed_path.name)
         else:
             return desired_path
 
