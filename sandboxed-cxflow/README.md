@@ -138,7 +138,7 @@ The execution environment can be defined as:
 * default - The default image, runtime parameters, environment variables, and SCAResolver parameters used if no runtime environment can be determined
 * tag - The image, runtime parameters, environment variables, and SCAResolver parameters used if a project has a matching tag
 
-Project tags are obtained from a config-as-code file in the root of the repository (not the CxFlow config as code file).  Future enhancements may allow this to be resolved from
+Project tags are obtained from a config-as-code file in the root of the repository (not the CxFlow config-as-code file).  Future enhancements may allow this to be resolved from
 project tags found via the SCA API.
 
 ## Dispatcher Configuration
@@ -361,3 +361,16 @@ RESOLVER_IMAGES_NODE_ENVPROPAGATE_1=MY_ENVIRONMENT_VARIABLE1
 RESOLVER_IMAGES_NODE_ENVPROPAGATE_2=MY_ENVIRONMENT_VARIABLE2
 ```
 
+## Resolving the Tag for an SCA Scan
+
+When an SCA scan is invoked, the `default` image tag is used unless a config-as-code file is provided that explicitly
+defines the image tag to use when executing SCAResolver.
+
+The config-as-code file named `.cxsca` should be placed in the root of the repository.  The contents should be:
+
+```json
+{
+    "version" : "1",
+    "tag" : "<image tag>"
+}
+```
