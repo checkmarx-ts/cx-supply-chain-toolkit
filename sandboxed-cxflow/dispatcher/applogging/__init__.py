@@ -25,7 +25,7 @@ default_log_config = {
     },
     "formatters" : {
         "default" : {
-            "format" : "[%(asctime)s][%(name)s][%(levelname)s] %(message)s",
+            "format" : "[%(asctime)s][%(process)d][%(name)s][%(levelname)s] %(message)s",
             "datefmt" : "%Y-%m-%dT%H:%M:%S%z"
         }
     },
