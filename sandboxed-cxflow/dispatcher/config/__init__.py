@@ -31,7 +31,7 @@ def load_default_yaml():
 SysConfig = ConfigProvider(load_default_yaml())
 
 class Consts:
-    INPATH = "/sandbox/input"
+    INPATH = "/sandbox/input_sandbox"
     OUTPATH = "/sandbox/output"
     REPORTPATH = "/sandbox/report"
     CAC_FILE = ".cxsca"
