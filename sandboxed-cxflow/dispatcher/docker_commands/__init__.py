@@ -30,18 +30,24 @@ def exec_docker_run(tag, docker_params, timeout, remove, app_params=[]):
     ret_code = {"StatusCode" : 8192}
 
     inst = __client.containers.run(tag, command=app_params, **docker_params)
-    __log.info(f"Container [{inst.name}] started with id [{inst.short_id}]")
+    __log.info(f"Container [{inst.name}] with id [{inst.short_id}] started.")
     try:
         ret_code = inst.wait(timeout=timeout.total_seconds())
     except inst.exceptions.ReadTimeout:
+        __log.error(f"Container [{inst.name}] with id [{inst.short_id}] was killed due to timeout.")
         inst.kill()
     finally:
         if not inst is None:
+            __log.info(f"Container [{inst.name}] with id [{inst.short_id}] finished.")
             for line in inst.logs(stream=True):
                 __log.debug(line.decode('utf-8'))
 
             if remove:
                 inst.remove(v=True, force=True)
+                __log.info(f"Container [{inst.name}] with id [{inst.short_id}] removed.")
+            else:
+                __log.warn(f"Container [{inst.name}] with id [{inst.short_id}] was not removed.")
+                
     return ret_code['StatusCode']
 
 
