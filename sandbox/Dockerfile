@@ -26,8 +26,6 @@ RUN chmod 755 /*.sh && \
 
 WORKDIR /sandbox/input_sandbox
 
-ENTRYPOINT ["/entrypoint.sh"]
-
 
 ##########################################################################
 FROM alpine:latest AS extracted-musl
@@ -52,7 +50,7 @@ RUN chmod -R 750 /sandbox/resolver
 
 
 ##########################################################################
-FROM base-config AS resolver-alpine
+FROM base-config AS resolver-alpine-bare
 ARG GROUP_ID=1000
 ARG USER_ID=1000
 
@@ -66,11 +64,15 @@ RUN apk add -q libstdc++ bash && \
     echo IMAGE BUILD UID:GID: $TARGET_NAME:$TARGET_GROUP as $USER_ID:$GROUP_ID && \
     chown -R root:$TARGET_GROUP /sandbox
 
+FROM resolver-alpine-bare AS resolver-alpine
+ARG GROUP_ID=1000
+ARG USER_ID=1000
 USER  ${USER_ID}:${GROUP_ID}
+ENTRYPOINT ["/entrypoint.sh"]
 
 
 ##########################################################################
-FROM base-config AS resolver-debian
+FROM base-config AS resolver-debian-bare
 ARG GROUP_ID=1000
 ARG USER_ID=1000
 
@@ -92,10 +94,18 @@ RUN \
     echo IMAGE BUILD UID:GID: $TARGET_NAME:$TARGET_GROUP as $USER_ID:$GROUP_ID && \
     chown -R root:$TARGET_GROUP /sandbox
 
+
+FROM resolver-debian-bare AS resolver-debian
+ARG GROUP_ID=1000
+ARG USER_ID=1000
 USER  ${USER_ID}:${GROUP_ID}
+ENTRYPOINT ["/entrypoint.sh"]
+
+
+
 
 ##########################################################################
-FROM base-config AS resolver-redhat
+FROM base-config AS resolver-redhat-bare
 ARG GROUP_ID=1000
 ARG USER_ID=1000
 
@@ -112,10 +122,16 @@ RUN \
     echo IMAGE BUILD UID:GID: $TARGET_NAME:$TARGET_GROUP as $USER_ID:$GROUP_ID && \
     chown -R root:$TARGET_GROUP /sandbox
 
+
+FROM resolver-redhat-bare AS resolver-redhat
+ARG GROUP_ID=1000
+ARG USER_ID=1000
 USER  ${USER_ID}:${GROUP_ID}
+ENTRYPOINT ["/entrypoint.sh"]
+
 
 ##########################################################################
-FROM base-config AS resolver-amazon
+FROM base-config AS resolver-amazon-bare
 ARG GROUP_ID=1000
 ARG USER_ID=1000
 
@@ -133,4 +149,9 @@ RUN yum install -y shadow-utils which && \
     echo IMAGE BUILD UID:GID: $TARGET_NAME:$TARGET_GROUP as $USER_ID:$GROUP_ID && \
     chown -R root:sca /sandbox
 
+FROM resolver-amazon-bare AS resolver-amazon
+ARG GROUP_ID=1000
+ARG USER_ID=1000
 USER  ${USER_ID}:${GROUP_ID}
+ENTRYPOINT ["/entrypoint.sh"]
+

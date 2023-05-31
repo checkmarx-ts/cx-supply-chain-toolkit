@@ -1,15 +1,17 @@
-# SCAResolver Sandboxed Container
+# SCAResolver "Sandboxed" Container
 
-The image here is intended to build a container derived from a base container that is a standard or customized build image typically used in a CI/CD pipeline.  The
-derived container will contain SCAResolver and have the ability to execute the appropriate package managers needed
-for dependency resolution.
+The Dockerfile contained here is can be used to build a container derived from a base container that is a standard or customized build image typically used 
+to perform a software build in a CI/CD pipeline.  The assumption is that the build environment capable of successfully producing a software build
+would also have the correct package managers to perform dependency resolution.  The derived container has SCAResolver installed, which will then use
+the base image's package managers to perform dependency resolution.
 
-The sandboxing is intended to allow SCAResolver to execute a dependency resolution while minimizing the risk of detonating malware payloads found in
-untrusted build scripts or package installation scripts. Not all package managers present the risk for detonating malware payloads.
+The resulting image will "sandbox" the SCAResolver to the extent possible. This is to allow SCAResolver to execute a dependency resolution while minimizing the risk
+of detonating malware payloads found in untrusted build scripts or package installation scripts. This is not universally a problem with all dependencies, but 
+there is always the possibility for malware delivery via dependencies.  If there was not, no one would be performing supply-chain security assessments such
+as the one being performed via SCAResolver.
 
 Nothing is foolproof; don't expect that using this container alone hardens your build environment.  A threat modeling exercise should be undertaken to understand
 if there are other infrastructure changes needed to properly control what is executed in your build environments.
-
 
 
 # Extending Your CI/CD Images
@@ -20,12 +22,7 @@ all relevant tools needed for dependency resolution and only need to add SCAReso
 would be needed to create derived images.
 
 The `Dockerfile` in the root of this repository is multi-stage where stage names specify the correct variation of Linux in the base image.  The stage names are intended to align 
-with popular base images used to create build environments.  Currently, the stages available for base image alignment:
-
-* resolver-alpine
-* resolver-debian
-* resolver-redhat
-* resolver-amazon
+with popular base images used to create build environments.  
 
 The stage names are intended to indicate compatibility with configuration steps for the variant of Linux in the root container.  Building these images works best when Docker `buildx` is used for building the image.
 
@@ -35,8 +32,23 @@ If you don't know the OS of your base image, one method that may work is to run 
 
 `docker run --rm -it --entrypoint=cat <image tag> /etc/os-release`
 
+Any image that can be pulled from the public Docker Hub or a docker registry connected via `docker login` can be defined as the base image.  If the wrong
+or incompatible stage is specified, the container build will fail.
 
-## Build Examples
+
+## Stage Names for Command Line Style SCAResolver Execution
+
+If you want an image that can be used to execute SCAResolver as if it were a CLI interface, these target names can be used:
+
+* resolver-alpine
+* resolver-debian
+* resolver-redhat
+* resolver-amazon
+
+Containers made this way are typically used when the container is loaded and run from an external script.  These targets would be used with CxFlow, but would not work well
+in some CI/CD pipelines.  
+
+### Build Command Examples for Command Line Style Execution
 
 Building with the Gradle 8.0 Alpine with JDK19 container as a base image uses the target `resolver-alpine`:
 
@@ -54,10 +66,40 @@ Building with the Node 19 Buster (Debian) container as a base image uses the tar
 docker build --progress plain -t test:node-linux --build-arg BASE=node:19-buster --target=resolver-debian .
 ```
 
-Any image that can be pulled from the public Docker Hub or a docker registry connected via `docker login` can be defined as the base image.  If the wrong
-or incompatible stage is specified, the container build will fail.
 
-# Invoking the Sandbox Container
+## Stage Names for CI/CD Scripted SCAResolver Execution
+
+If you want an image that can be used to execute SCAResolver as it is running in a CI/CD pipeline stage, these target names can be used:
+
+* resolver-alpine-bare
+* resolver-debian-bare
+* resolver-redhat-bare
+* resolver-amazon-bare
+
+Containers built with these targets have no entrypoint and run as root.  CI/CD pipelines, like Azure DevOps, will sometimes run a stage
+inside the container itself.  In these cases, the requirement may be that no entrypoint is defined and that the container's user has
+root level access.
+
+### Build Command Examples for Scripted Execution
+
+Building with the Gradle 8.0 Alpine with JDK19 container as a base image uses the target `resolver-alpine-bare`:
+
+```
+docker build -t <your tag> --build-arg BASE=gradle:8.0-jdk19-alpine --target=resolver-alpine-bare .
+```
+
+Building with the Node 19 Alpine container as a base image also uses the target `resolver-alpine-bare`:
+```
+docker build -t <your tag> --build-arg BASE=node:19-alpine --target=resolver-alpine-bare .
+```
+
+Building with the Node 19 Buster (Debian) container as a base image uses the target `resolver-debian-bare`:
+```
+docker build --progress plain -t test:node-linux --build-arg BASE=node:19-buster --target=resolver-debian-bare .
+```
+
+
+# Invoking the Sandbox Container CLI Style
 
 The container can be invoked like SCAResolver from the command line.  Parameters controlling the scan are passed to the container. It is also possible to customize 
 the `Configuration.yml` with static parameters that don't need to change with each invoke.
