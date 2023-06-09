@@ -1,7 +1,6 @@
-name: build-ci
 on:
   workflow_dispatch:
-  push:
+  # push:
 
 env:
   BUILD_COMPAT: ${{ vars.WORKFLOW_BUILD_COMPAT }}
