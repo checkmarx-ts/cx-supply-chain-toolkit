@@ -20,7 +20,7 @@ jobs:
           platforms: linux/amd64
       - name: Execute Sandbox Build Tests
         run: |
-          cd ${{ github.workspace }}/sandbox/tests
+          cd ${{ github.workspace }}/build-environment/tests
           ./build-tests-linux-amd64.sh
 
   execution-unit-tests-linux-amd64:
@@ -40,16 +40,16 @@ jobs:
           TEST_USER: ${{ secrets.SCA_USER }}
           TEST_PASSWORD: ${{ secrets.SCA_PASSWORD }}
         run: |
-          cd ${{ github.workspace }}/sandbox/tests
+          cd ${{ github.workspace }}/build-environment/tests
           ./execute-tests-linux-amd64.sh
     
-  dispatcher-unit-tests:
+  SAST-dispatcher-unit-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Code
         uses: actions/checkout@v3
       - name: Install packages
-        run: pip install -r ${{ github.workspace }}/sandboxed-cxflow/dispatcher/requirements.txt
+        run: pip install -r ${{ github.workspace }}/SAST/enhanced-cxflow-scaresolver/dispatcher/requirements.txt
       - name: Execute Unit Tests
-        run: python -m unittest discover -v -p test_*.py -s ${{ github.workspace }}/sandboxed-cxflow/dispatcher
+        run: python -m unittest discover -v -p test_*.py -s ${{ github.workspace }}/SAST/enhanced-cxflow-scaresolver/dispatcher
 
