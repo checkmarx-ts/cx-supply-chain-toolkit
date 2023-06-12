@@ -57,7 +57,7 @@ jobs:
         run: |
           BRIEFTAG=${{ inputs.tag }}
           FULLTAG=$BRIEFTAG-cxflow-${{ env.CXFLOW_VERSION }}
-          docker build -f SAST/enhanced-cxflow-scaresolver/Dockerfile -t $DOCKER_REPO:$FULLTAG -t $DOCKER_REPO:$BRIEFTAG SAST/enhanced-cxflow-scaresolver
+          docker build -f legacy/enhanced-cxflow-scaresolver/Dockerfile -t $DOCKER_REPO:$FULLTAG -t $DOCKER_REPO:$BRIEFTAG SAST/enhanced-cxflow-scaresolver
           [ ${{ inputs.prerelease }} = false ] && docker tag $DOCKER_REPO:$FULLTAG $DOCKER_REPO:latest || :
           docker push --all-tags $DOCKER_REPO
           
