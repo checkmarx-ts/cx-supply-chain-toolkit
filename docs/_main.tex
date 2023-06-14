@@ -35,25 +35,29 @@
 \newpage
 
 
-\tableofcontents
 
-\chapter*{Foreword}
-
-Supply chain vulnerability scanning has become an important part of managing risk when software
-utilizes open source shared components.  Generating the software's tree of dependencies is typically facilitated
-by executing the development tools the development tools typically used to produce the compiled software
-deployment packages.  In some integration scenarios, it can be challenging to obtain an accurately
-generated dependency tree.
-
-This toolkit is designed to make it easier to generate dependency trees without the need to make significant
-changes to an existing build environment.  
-
-\section*{Quickstart}
+\chapter*{Quickstart}
 
 If you are not familiar with supply chain scanning and
 dependency resolution or want to understand how it works, please
-start with the \hyperref[part:background]{Background} section.
+start with the Part \ref{part:background}.
 
+
+\noindent\\If you are trying to integrate supply chain scanning into
+you SDLC, Part \ref{part:operation} covers several related topics:
+
+\begin{itemize}
+    \item If you are trying to integrate scanning in an existing CI/CD pipeline by \\
+    extension of a container that executes a build stage in your pipeline, \\
+    please start with Chapter \ref{chap:ext_build_env}.
+    \item If you are trying to automatically select the correct build environment for a \\
+    supply chain scan invoked via a web hook, please start with Chapter \ref{chap:build_env_affinity}.
+    
+\end{itemize}
+
+
+
+\tableofcontents
 
 \newtcblisting{xml}[3]{
     listing only,
@@ -77,21 +81,15 @@ start with the \hyperref[part:background]{Background} section.
     },
 }
 
+
 \part{Background}\label{part:background}
 \input{sections/background/background.tex}
 
-\part{Operation}
+\part{Operation}\label{part:operation}
 \input{sections/operation/operation.tex}
 
 \part{Appendices}
 \appendix
-% \input{release_notes.tex}
-% \input{spec.tex}
-% \input{shard_key_cookbook.tex}
-% \input{key-format-specification.tex}
-% \input{splunk.tex}
-% \input{amqp_patterns.tex}
-% \input{troubleshooting.tex}
-
+\input{_release_notes.tex}
 
 \end{document}
