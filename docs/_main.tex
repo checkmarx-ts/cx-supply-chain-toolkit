@@ -1,0 +1,97 @@
+\documentclass[a4paper, 11pt, oneside]{book}
+\usepackage[a4paper, total={6.5in, 10in}]{geometry}
+\usepackage{hyperref}
+
+\usepackage[svgnames]{xcolor}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{PTSerif}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{fouriernc}
+\usepackage{makecell}
+\usepackage{fontawesome}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{xparse}
+\usepackage{amssymb, amsmath}
+\usepackage[many]{tcolorbox}
+\tcbuselibrary{listings}
+
+
+\begin{document}
+
+\begin{titlepage}
+    \thispagestyle{empty}
+    \centering
+    \includegraphics[scale=.4]{graphics/cx_logo-dark.png}
+    \vfill
+    \textcolor{Sienna}{\Huge Checkmarx Supply Chain Toolkit\\\input{version}}
+    \vfill
+    {\Large\textbf{Nathan Leach, CSSLP\\Checkmarx Principal Solution Architect}}
+\end{titlepage}
+
+\newpage
+
+
+\tableofcontents
+
+\chapter*{Foreword}
+
+Supply chain vulnerability scanning has become an important part of managing risk when software
+utilizes open source shared components.  Generating the software's tree of dependencies is typically facilitated
+by executing the development tools the development tools typically used to produce the compiled software
+deployment packages.  In some integration scenarios, it can be challenging to obtain an accurately
+generated dependency tree.
+
+This toolkit is designed to make it easier to generate dependency trees without the need to make significant
+changes to an existing build environment.  
+
+\section*{Quickstart}
+
+If you are not familiar with supply chain scanning and
+dependency resolution or want to understand how it works, please
+start with the \hyperref[part:background]{Background} section.
+
+
+\newtcblisting{xml}[3]{
+    listing only,
+    title=<#1> #2 #3,
+    width=\textwidth,
+    listing options={
+        basicstyle=\small\ttfamily,
+        breaklines=true,
+        columns=fullflexible,
+    },
+}
+
+\newtcblisting{code}[3]{
+    listing only,
+    title=#1 #2 #3,
+    width=\textwidth,
+    listing options={
+        basicstyle=\small\ttfamily,
+        breaklines=true,
+        columns=fullflexible,
+    },
+}
+
+\part{Background}\label{part:background}
+\input{sections/background/background.tex}
+
+\part{Operation}
+\input{sections/operation/operation.tex}
+
+\part{Appendices}
+\appendix
+% \input{release_notes.tex}
+% \input{spec.tex}
+% \input{shard_key_cookbook.tex}
+% \input{key-format-specification.tex}
+% \input{splunk.tex}
+% \input{amqp_patterns.tex}
+% \input{troubleshooting.tex}
+
+
+\end{document}
