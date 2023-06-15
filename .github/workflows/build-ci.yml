@@ -52,3 +52,20 @@ jobs:
       - name: Execute Unit Tests
         run: python -m unittest discover -v -p test_*.py -s ${{ github.workspace }}/legacy/enhanced-cxflow-scaresolver/dispatcher
 
+  docs-manual-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build PDF Manual
+        uses: xu-cheng/latex-action@v2
+        with:
+          root_file: docs/_main.tex
+          work_in_root_file_dir: true
+
+  docs-release-notes-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build PDF Release Notes
+        uses: xu-cheng/latex-action@v2
+        with:
+          root_file: docs/_release_notes.tex
+          work_in_root_file_dir: true
