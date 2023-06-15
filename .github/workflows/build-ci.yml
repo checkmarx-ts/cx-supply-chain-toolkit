@@ -55,6 +55,8 @@ jobs:
   docs-manual-build:
     runs-on: ubuntu-latest
     steps:
+      - name: Fetch Code
+        uses: actions/checkout@v3
       - name: Build PDF Manual
         uses: xu-cheng/latex-action@v2
         with:
@@ -64,6 +66,8 @@ jobs:
   docs-release-notes-build:
     runs-on: ubuntu-latest
     steps:
+      - name: Fetch Code
+        uses: actions/checkout@v3
       - name: Build PDF Release Notes
         uses: xu-cheng/latex-action@v2
         with:
