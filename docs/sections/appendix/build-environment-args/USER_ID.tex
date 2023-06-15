@@ -1,0 +1,19 @@
+\buildarg{USERID}{<container host invoking user's user id>}{USER\textunderscore ID}
+
+Defaults to "1000", which is generally the ID of the first non-system user created on a clean
+Linux system.  Most CI/CD tools will invoke pipeline stages (and thus container images) from
+a user account the defined by the pipeline infrastructure.  Since container host directories or files
+mapped to a container volume maintain the user/group ownership ID and permission bits when mapped, 
+the container's user/group IDs used to set ownership on the \texttt{/sandbox} directory contents
+need to match the IDs in the container host.
+
+At build time, a user with the specified ID will be created if it doesn't exist.  If your base 
+container already has the user with the specified ID, the user will be used as the user that 
+executes \scaresolver. To detect if you need to change this value, you can execute the following 
+command in a stage in your pipeline to 
+\href{https://www.cyberciti.biz/faq/understanding-etcpasswd-file-format/}{see the user ID}
+running the pipeline steps:
+
+
+\noindent\\\texttt{getent passwd \$(whoami)}
+

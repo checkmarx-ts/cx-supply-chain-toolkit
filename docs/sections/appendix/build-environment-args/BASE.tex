@@ -1,0 +1,7 @@
+\buildarg{BASE}{<base container image:tag>}{BASE}
+
+The build argument \texttt{BASE} is optional and will default to \texttt{alpine:latest} if not 
+provided.  The \texttt{BASE} argument should be the tag of a container image that you have 
+defined as appropriate for the \texttt{--target} build stage. Your base image should 
+contain all required build tooling that would be used in resolving dependencies when run 
+against a project that would normally build with that base image.
