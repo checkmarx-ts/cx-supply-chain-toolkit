@@ -42,7 +42,7 @@ as part of the container build.  The pipeline scripting running in the container
 will invoke \scaresolver as it would invoke any other tool in the scripted
 build steps.  
 
-\section{Containerized Build Environment Extension}
+\section{Containerized Build Environment Extension}\label{sec:extending_environment}
 
 Often it is difficult to modify the build agent installation or the build
 container definition to add \scaresolver.  It may also present some
@@ -143,7 +143,7 @@ The \texttt{default-config} folder contains the \texttt{Configuration.yml} file 
 configuration for \scaresolver.  It is possible to modify the default configuration so that
 common parameter values are not needed to be provided for every invocation of \scaresolver.
 
-\subsection{Dockerfile Targets with Entrypoints}
+\subsection{Dockerfile Targets with Entrypoints}\label{ssec:entrypoint_targets}
 
 If you want to invoke \scaresolver in the extended image in the same way it is invoked from the command
 line if it were locally installed, use the entrypoint targets.  If you intend to use the
@@ -160,7 +160,7 @@ image with an entry point are:
 \end{itemize}
 
 
-\subsection{Bare Dockerfile Targets}
+\subsection{Bare Dockerfile Targets}\label{ssec:bare_targets}
 
 Containers built with these targets have no entrypoint and run as root.  
 CI/CD pipelines will sometimes need the ability to execute environment

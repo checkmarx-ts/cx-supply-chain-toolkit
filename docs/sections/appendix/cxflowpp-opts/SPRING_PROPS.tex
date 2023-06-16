@@ -1,0 +1,8 @@
+\opt{SPRINGPROPS}{<spring properties>}{SPRING\_PROPS}
+
+\noindent\\The default value for this environment variable is 
+\texttt{-Dspring.profiles.active=web}.  This is passed to the Java runtime after 
+\texttt{JAVA\_PROPS} and before the \cxflow jar is executed.  \cxflow has embedded profiles that 
+can be used as a basic set of configurations.  Most of them are outdated; the `web` profile
+usually causes fewer configuration issues.  These are not documented in the \cxflow documentation, 
+so it is best to leave this as-is unless advised to do otherwise.

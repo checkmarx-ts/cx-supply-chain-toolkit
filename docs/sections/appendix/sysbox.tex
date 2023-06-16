@@ -1,0 +1,19 @@
+\chapter{\sysbox Installation Instructions}\label{chap:sysbox_install}
+
+
+
+This installation was performed on an Ubuntu Linux install.  
+The \sysbox GitHub site provides a
+\href{https://github.com/nestybox/sysbox/blob/master/docs/distro-compat.md#supported-linux-distros}{list of compatible Linux distributions}
+that may be an alternative to using Ubuntu. 
+
+\noindent\\To install Sysbox on Ubuntu, the following commands are executed
+\footnote{The \sysbox release available at the time this manual was written may be outdated
+at the time of install.  Please verify the latest release artifacts.}:
+
+\begin{code}{Sysbox Installation Steps}{}{}
+wget \
+https://downloads.nestybox.com/sysbox/releases/v0.5.2/sysbox-ce_0.5.2-0.linux_amd64.deb
+
+apt install -y jq docker.io ./sysbox-ce_0.5.2-0.linux_amd64.deb
+\end{code}

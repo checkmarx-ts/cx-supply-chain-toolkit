@@ -1,144 +1,130 @@
 \chapter{Executing Supply Chain Scans with a Web Hook}\label{chap:build_env_affinity}
 
 
-\section{Supply Chain Scans with \cxone}
+\section{Supply Chain Vulnerability Scans with \cxone}
 
 Webhook integrations with \cxone are provided via the feedback applications.
 Integration of \scaresolver for local execution is not currently available in
 \cxone.
 
 
-% # Sandboxed CxFlow
+\section{Supply Chain Vulnerability Scans with CxFlow++}
 
-% This is a re-built CxFlow image that follows the release configuration of the official CxFlow image.  The main purpose
-% of this image is to allow the execution of SCAResolver in a (mostly) sandboxed, customer-defined environment.
+\cxflow is a scan orchestration tool that is used for orchestrating scans for \cxsast and \cxsca.  One
+of the typical methods of invoking scans is to received SCM webhook payloads to indicate when
+a push or pull-request event occurs on a source code repository.  The required scan types are orchestrated,
+and the results are posted to a pull request comment or issues tracker tickets are opened.
 
-% This is a work in progress.
+\cxflowplusplus is a re-packaged container image of \cxflow.  The configuration of \cxflow
+does not change, but \cxflowplusplus adds some additional capabilities:
 
-% To build the repackaged CxFlow image, something similar to the following build command can be executed:
+\begin{itemize}
+    \item Advanced configuration options allow for pre-execution download of \cxflow configuration
+    artifacts.
+    \item Supply chain vulnerability scans via \scaresolver can be performed using
+    \hyperref[sec:extending_environment]{build environment extension} container images with 
+    affinity to the code targeted for the scan.
+\end{itemize}
 
-% `docker build -t cxflow-dispatcher:latest .`
+Figure \ref{fig:dispatcher_workflow} depicts the workflow of the dispatcher as it resolves
+the \scaresolver execution environment that has affinity to a project with scans
+orchestrated by \cxflowplusplus.  The scans are initiated by a web hook payload sent to the
+\cxflowplusplus endpoint.  \cxsast scans are orchestrated in parallel with \cxsca scans by
+\cxflowplusplus with the additional logic in the dispatcher.
 
-% # Docker in Docker
+Projects can be tagged to allow dispatcher to locate the correctly configured \scaresolver
+container, as is demonstrated with Applications A and B in Figure \ref{fig:dispatcher_workflow}.
+Application C and D may not be tagged for affinity with a specific container, so the
+\scaresolver scan would be executed in a container configured with the \texttt{Default} tag.
 
-% This image works by invoking Docker inside the Docker container.  This means the deployment options may be somewhat limited given that
-% running Docker inside a Docker container has to be done with the correct deployment environment.
-
-% ## CI/CD Pipeline Deployment
-
-% Compatibility scenarios are TBD.  In most build pipeline tools, the containers running each stage can invoke Docker.
-
-% ## Container Orchestrators and Hosting Infrastructure
-
-% Compatibility with services such as AWS ECS is TBD.  These may not be a viable deployment solution due to the
-% privileges needed for Docker in Docker execution.
-
-% ## Instance Deployment
-
-% The testing for this was mostly done with deployment on a compute instance.  Deployment pre-requisites are:
-
-% * Linux instance with a kernel >= 5.12
-% * [Sysbox](https://github.com/nestybox/sysbox) installed
-
-% Running the container with the `--privileged` flag may be an option to avoid the need for Sysbox and allow it to run on Linux kernels
-% with versions prior to 5.12.  This is TBD.
-
-% ### Installing Sysbox
-
-% This installation was performed on an Ubuntu Linux install.  [Sysbox](https://github.com/nestybox/sysbox) provides a [list of
-% compatible Linux distributions](https://github.com/nestybox/sysbox/blob/master/docs/distro-compat.md#supported-linux-distros) that may be an
-% alternative to using Ubuntu. The [Sysbox](https://github.com/nestybox/sysbox) installation guide does give instructions for
-% [installing Shitfs](https://github.com/nestybox/sysbox/blob/master/docs/distro-compat.md#shiftfs-requirement) to support Linux kernel versions
-% prior to 5.12.  This is not a tested scenario.
-
-% To install Sysbox on Ubuntu, the following commands are executed:
-
-% ```
-% wget https://downloads.nestybox.com/sysbox/releases/v0.5.2/sysbox-ce_0.5.2-0.linux_amd64.deb
-% apt install -y jq docker.io ./sysbox-ce_0.5.2-0.linux_amd64.deb
-% ```
+\begin{figure}[h]
+    \caption{\cxflowplusplus Dispatcher Workflow}
+    \includegraphics[width=\textwidth]{graphics/dispatcher_workflow.png}
+    \label{fig:dispatcher_workflow}
+\end{figure}
 
 
-% Running CxFlow is performed with a command similar to this:
+Some operational aspects of \cxflow may change when using \cxflowplusplus.  The \cxflowplusplus 
+build environment affinity feature
+\footnote{If there is no need to use this features of the dispatcher, \cxflowplusplus may not offer any advantages over \cxflow.} 
+utilizes
+\href{https://www.docker.com/blog/docker-can-now-run-within-docker/}{docker-in-docker (DIND)}; this may
+change the compatibility of the runtime environment for an existing \cxflow deployment.
 
-% ```
-% docker run --runtime=sysbox-runc -d <the CxFlow image tag>
-% ```
+\subsection{\cxflowplusplus Runtime Environment}
 
-% If the `--runtime=sysbox-runc` option is not included and not using the `--privileged` flag, the image will encounter errors when attempting to invoke Docker.
+The minimum recommended environment for \cxflowplusplus is:
 
-% ### Logging
+\begin{itemize}
+    \item 4 Cores
+    \item 32 GB RAM
+    \item 150GB of disk space
+    \item Linux OS with kernel >= 5.12 if using \sysbox
+\end{itemize}
 
-% CxFlow logs to the console to maintain running compatibility with the official CxFlow image.  Any dispatcher operations are logged in files found on the 
-% container in the directory `/var/log/dispatcher`.  The use of logging files for the dispatcher is to avoid the console logs from being corrupted
-% by spontaneous log emissions from the dispatcher.
+\cxflowplusplus will be loading and executing container images as part of supply chain vulnerability scan
+orchestration.  This can be potentially CPU and memory intensive.  Vertical or horizontal scaling
+of \cxflowplusplus may be required to be able to orchestrate the volume of scans requested.
 
-% # CxFlow Image Compatibility
+\noindent\\The execution of \cxflowplusplus must have some additional parameters provided to the
+\texttt{docker} command to be able to create and execute docker containers inside the \cxflowplusplus
+container.  If these additional parameters are not provided, \cxflowplusplus will emit errors when
+attempting to execute docker containers inside the running container.
 
-% All the existing Spring Boot facilities for configuring CxFlow via environment variables work with this image.  Using this image
-% in place of the official CxFlow image is compatible as long as there is no need to execute SCAResolver.
+\subsubsection{DIND - Privileged Execution}
 
-% If using SCAResolver, there is more configuration needed.  The container will actively attempt to prevent you from configuring the `SCA_PATH_TO_SCA_RESOLVER` option, 
-% providing the path on the command line or setting it in the YAML configuration.  SCAResolver has been replaced in this image with an mediation script that invokes SCAResolver
-% in an appropriate container image.
+One method of enabling docker-in-docker is to execute containers in privileged mode.
+Running \cxflowplusplus in privileged mode can be done like so:
 
-% This image can be used for web hook or command line CxFlow execution.
+\noindent\\\texttt{docker run -privileged -d ----restart unless-stopped \cxflowplusplustag}
 
-% # Environment Variables: Options for the Image
+\noindent\\\textbf{WARNING}
+\noindent\\It is generally considered a bad security practice to run a docker container in privileged mode.
+Given that some open source packages can execute malware payloads during dependency resolution, it is not
+advised to run in privileged mode for production purposes.
 
-% This image supports non-CxFlow environment variables that change how it operates at runtime.
+\subsubsection{DIND - \sysbox Runtime}
 
-% ## `JAVA_OPTS`
-% The default value for this environment variable is `-Xms512m -Xmx2048m`.  This variable can be used to pass options to the Java runtime
-% prior to executing the CxFlow jar.
+An alternative to executing docker in privileged mode is to use \sysbox as a runtime.  \sysbox runs on Linux
+and has a requirement of a kernel version >= 5.12.  Appendix \ref{chap:sysbox_install} has
+a procedure that can be used to install \sysbox manually on a Linux OS.
 
-% ## `JAVA_PROPS`
-% The default value for this environment variable is `-Djava.security.egd=file:/dev/./urandom`.  This is passed to the Java runtime after `JAVA_OPTS` and before the CxFlow
-% jar is executed.  
+\noindent\\\texttt{docker run ----runtime=sysbox-runc -d ----restart unless-stopped \cxflowplusplustag}
 
-% ## `SPRING_PROPS`
-% The default value for this environment variable is `-Dspring.profiles.active=web`.  This is passed to the Java runtime after `JAVA_PROPS` and before the
-% CxFlow jar is executed.  CxFlow has embedded profiles that can be used as a basic set of configurations.  Most of them are outdated; the `web` profile
-% usually causes fewer configuration issues.  These are not documented in the CxFlow documentation, so it is best to leave this as-is unless
-% advised to do otherwise.
+\subsection{Logging}
 
-% ## `NO_DOCKERD`
-
-% Set the environment variable `NO_DOCKERD` (no value is required) to prevent starting `dockerd` on startup. 
-% Attempting to execute SCAResolver without `dockerd` running will result in an error
-
-
-% ## `CXFLOW_ALT_JAR_URL`
-
-% If the environment variable `CXFLOW_ALT_JAR_URL` contains a URL to a CxFlow jar, that jar will be downloaded and executed instead of
-% the CxFlow jar embedded in the container.
-
-
-% ## `CXFLOW_JAR_SHA256`
-
-% Set this value with a SHA-256 hash that is expected to match the CxFlow jar.  If replacing the CxFlow jar using `CXFLOW_ALT_JAR_URL`,
-% validating the correct hash value before execution is highly encouraged.  If the SHA-256 of the CxFlow jar to be executed does not match
-% the provided SHA-256, the jar will not be executed.
+\cxflow logs to the console to maintain running compatibility with the official \cxflow image.  
+Any supply chain vulnerability scan environment affinity operations are logged in files found
+on the container in the directory \texttt{/var/log/dispatcher}.  To maintain the logs across
+restarts of the container, it is recommended to map a local volume to \texttt{/var/log/dispatcher}.
+The use of logging files for the dispatcher is to avoid the console logs from being corrupted
+by spontaneous log emissions from the dispatcher.
 
 
-% ## `CXFLOW_YAML_URL`
+\subsection{\cxflow Image Compatibility}
 
-% If the environment variable `CXFLOW_YAML_URL` contains a URL to a CxFlow YAML configuration file, it will be downloaded and set
-% as the CxFlow configuration.
+All the existing Spring Boot facilities for configuring \cxflow via environment variables work 
+with the \cxflowplusplus image.  Using the \cxflowplusplus image in place of the official
+\cxflow image is compatible as long as there is no need to execute \scaresolver.
+
+If using \scaresolver, more configuration needed to provide a method of container image selection
+for use in supply chain vulnerability scans.  The container will actively prevent
+configuration of the \cxflow \texttt{SCA\_PATH\_TO\_SCA\_RESOLVER} option.  
+
+The \cxflowplusplus image does not contain the \scaresolver runtime that would normally be found
+in the official \cxflow image.  The \cxflowplusplus image replaces \scaresolver with
+a mediation script known as \textit{the dispatcher} that invokes \scaresolver in an appropriate
+container image.
+
+The \cxflowplusplus image supports environment variables that change how it operates when 
+preparing to start the \cxflow services.  Appendix \ref{chap:image_opts} has a complete list
+of \cxflowplusplus additional options.
 
 
-% ## `DISPATCHER_YAML_URL`
-
-% If the environment variable `DISPATCHER_YAML_URL` contains a URL to a Dispatcher YAML configuration file, it will be downloaded and set
-% as the Dispatcher configuration.
+\subsection{\cxflow++ Dispatcher Configuration}
 
 
-% ## `DEBUG`
 
-% If the variable `DEBUG` exists in the environment, debug logging output will be enabled.
-
-
-% # SCAResolver Dispatcher
 
 % The exact description of the Dispatcher is TBD.  The basic idea is to execute SCAResolver in a mostly sandboxed execution environment.  The execution environment
 % could be a customized build environment.
@@ -150,6 +136,11 @@ Integration of \scaresolver for local execution is not currently available in
 
 % Project tags are obtained from a config-as-code file in the root of the repository (not the CxFlow config-as-code file).  Future enhancements may allow this to be resolved from
 % project tags found via the SCA API.
+
+
+
+
+
 
 % ## Dispatcher Configuration
 

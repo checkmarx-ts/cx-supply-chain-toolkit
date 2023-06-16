@@ -1,7 +1,79 @@
 \chapter{Executing Supply Chain Scans in a Pipeline}
 
+
 \section{Supply Chain Scans with \cxone}
 
 This document does not currently cover integration topics for integrating
 \scaresolver invoked in a pipeline with \cxone.  This will be covered in 
 future releases.
+
+
+\section{\scaresolver On-Demand-Install Execution Method}
+
+This method invokes the \scaresolver in the pipeline script by following this
+basic pattern:
+
+\begin{enumerate}
+    \item Download the \scaresolver from the Checkmarx website or
+    an internal storage endpoint.
+    \item Extract \scaresolver from the distribution tarball.
+    \item Execute \scaresolver with command line parameters relevant to
+    to the code that is the target of the scan.
+\end{enumerate}
+
+Some advantages of this method:
+
+\begin{itemize}
+    \item It always gets the latest version of \scaresolver.
+    \item There is no additional configuration artifacts needed to be able to
+    perform a supply chain vulnerability scan.
+\end{itemize}
+
+
+
+Some disadvantages of this method:
+\begin{itemize}
+    \item The endpoint for the download may be unreachable, thus causing the build to fail.
+    \item The steps to perform the download and install may need to be repeated
+    in many different pipeline definitions.
+\end{itemize}
+
+
+
+\section{Containerized Build Environment Execution Method}
+
+Many CI/CD pipeline tools allow stages to define container images used for
+executing a pipeline stage.  Using techniques discussed in
+Section \ref{sec:extending_environment}, a container with \scaresolver
+configured for execution can be used to execute a pipeline stage.  The
+CI/CD pipeline tool may use a container with an 
+\hyperref[ssec:entrypoint_targets]{Entrypoint} or one that
+is used by the \hyperref[ssec:bare_targets]{Bare} container build targets.
+
+The \hyperref[listing:ado_pipeline2]{Azure Devops Pipeline Example} below 
+shows a pipeline stage executing \scaresolver in a containerized environment.
+In the case of Azure DevOps, containers
+\href{https://learn.microsoft.com/en-us/azure/devops/pipelines/process/container-phases?view=azure-devops#requirements}{are required to not define an entrypoint.}
+By building a container extending an existing containerized build
+environment with a \hyperref[ssec:bare_targets]{Bare} build target, Azure DevOps
+pipeline scripts execute inside the container as demonstrated in the listing.
+
+\label{listing:ado_pipeline2}
+\begin{code}{Azure Devops Pipeline Example}{}{}
+trigger:
+    - master
+
+pool:
+    vmImage: ubuntu-latest
+
+jobs:
+    - job: SCAResolver
+        pool:
+            vmImage: ubuntu-latest
+
+        container: 
+            image: cxnleach/scaresolver-general-build-ado:latest
+
+        steps:
+            - script: /sandbox/resolver/ScaResolver -h
+\end{code}
