@@ -1,0 +1,47 @@
+\section{\texttt{docker}}
+
+This section is optional.  It is intended to provide defaults for Docker invocations.
+
+\subsection{\texttt{docker.login}}
+
+This section is a list of container repositories where a \texttt{docker login} command will be 
+executed on \cxflowplusplus startup.  If the images tags configured in the \texttt{resolver}
+section are not stored in the default Docker public repository, configure the private 
+image repositories here.
+
+\noindent\\Multiple image repositories can be defined using multiple entries under 
+\texttt{docker.login}.  Each key name under \texttt{docker.login} is the name of the
+repository host.  Each repository host key is expecting a \texttt{username} and
+\texttt{password} key/value pair.
+
+\noindent\\Example YAML:\\
+
+\begin{code}{\texttt{docker.login}}{YAML Structure}{}
+docker:
+    login:
+        registry-1.docker.io:
+            username: XXXXXXXXX
+            password: XXXXXXXXX
+        ghcr.io:
+            username: XXXXXXXXX
+            password: XXXXXXXXX
+        my-host.com:
+            username: XXXXXXXXX
+            password: XXXXXXXXX
+\end{code}
+
+\subsubsection{\texttt{docker.login} as Environment Variables}
+
+Dots in hostnames are represented in variable names by a single underscore.  Dashes in hostnames can be represented 
+in environment variable names with a double underscore.  
+Underscores are not valid in DNS hostnames and are therefore not supported.
+
+\noindent\\The above example of the \texttt{docker.login} YAML 
+has the equivalent environment variables:\\
+
+\begin{code}{\texttt{docker.login}}{Environment Variables}{}
+DOCKER_LOGIN_HUB_DOCKER_IO_USERNAME=XXXX
+DOCKER_LOGIN_HUB_DOCKER_IO_PASSWORD=XXXX
+DOCKER_LOGIN_MY__HOST_COM_USERNAME=XXXX
+DOCKER_LOGIN_MY__HOST_COM_PASSWORD=XXXX
+\end{code}

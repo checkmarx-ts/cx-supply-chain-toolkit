@@ -1,0 +1,51 @@
+\chapter{Dispatcher Configuration}\label{chap:dispatcher_config}
+
+
+\noindent\\An example of the complete YAML configuration can be observed below:\\
+
+
+\begin{code}{Example Dispatcher Configuration YAML}{}{}
+docker:
+    login:
+        registry-1.docker.io:
+            username: XXXXXXXXX
+            password: XXXXXXXXX
+        ...
+        ghcr.io:
+            username: XXXXXXXXX
+            password: XXXXXXXXX
+
+resolver:
+    twostage: true
+    defaults:
+        containerttl: 15m
+        exectimeout: 10m
+        defaulttag: default
+
+    images:
+        default:
+            container: test:gradle
+            containerttl: 5m
+            exectimeout: 10m
+            execenv:
+                FOO: BAZ
+            execparams:
+                - --log-level=Verbose
+        node: 
+            container: test:node-linux
+            execenv:
+                FOO: BAR
+            envpropagate:
+                - MY_ENVIRONMENT_VARIABLE1
+                - MY_ENVIRONMENT_VARIABLE2
+
+\end{code}
+
+
+\input{sections/appendix/dispatcher-config/docker.tex}
+\input{sections/appendix/dispatcher-config/resolver.tex}
+
+
+
+
+

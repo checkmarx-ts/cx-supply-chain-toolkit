@@ -1,0 +1,161 @@
+\section{\texttt{resolver}}
+
+This section is used to define parameters for \scaresolver invocation.
+
+\subsection{\texttt{resolver.twostage}}
+
+This is optional; the default is \texttt{true}.
+
+\noindent\\If \texttt{true}, an \texttt{online} \scaresolver scan will be split into two stages:\\
+
+\begin{enumerate}
+    \item The first stage is an \texttt{offline} scan.  When invoking the offline scan, 
+    credentials for the SCA server are stripped from the command.  This executes the dependency
+    resolution without leaving credentials exposed to any scripts that execute as part of the 
+    dependency resolution.
+    \item The second stage is an \texttt{upload} where the dependency resolution results are
+    uploaded to the SCA server.
+\end{enumerate}
+
+\noindent\\If set to \texttt{false}, an \texttt{online} scan will be invoked in a single step.
+
+\noindent\\The environment variable \texttt{RESOLVER\_TWOSTAGE} is equivalent to the YAML configuration.
+
+
+\subsection{\texttt{resolver.defaults}}
+
+This section is optional; it allows for overriding the hard-coded default values if desired.
+
+\noindent\\The timespan values here can be represented by simple value strings with numeric 
+indicators indicating time units such as \texttt{h} for hours, \texttt{m} for 
+minutes, and \texttt{s} for seconds.  Example:
+
+\noindent\\\texttt{2h15m30s} means 2 hours, 15 minutes, and 30 seconds
+
+\noindent\\\texttt{15m} means 0 hours, 15 minutes, and 0 seconds
+
+\noindent\\An example of the \texttt{resolver.defaults} section can be observed below:\\
+
+\begin{code}{\texttt{resolver.defaults}}{YAML Structure}{}
+resolver:
+    defaults:
+        containerttl: 15m
+        exectimeout: 10m
+        defaulttag: default
+        delete: False
+\end{code}
+
+
+\noindent\\\texttt{resolver.defaults.containerttl} - If not provided, this defaults to 1 hour.  
+This is the length
+of time a container image will be used after the initial 
+\texttt{docker pull} command is executed to download the image.  This allows updated images to be 
+retrieved without the need to restart \cxflowplusplus.
+
+\noindent\\\texttt{resolver.defaults.exectimeout} - If not provided, this defaults to 30 minutes.  
+This is the amount of time \cxflowplusplus will allow the \scaresolver image to execute before 
+killing it and assuming failure.
+
+\noindent\\\texttt{resolver.defaults.defaulttag} - If not provided, this defaults to the value 
+of \texttt{default}.  This is the tag of the image configured in \texttt{resolver.images} used if 
+an unknown tag is requested.
+
+\noindent\\\texttt{resolver.defaults.delete} - If not provided, this defaults to the value 
+of \texttt{true}.  Setting this to \texttt{false} will prevent the container image created
+for the scan from being deleted.  The \texttt{false} setting is only recommended for
+troubleshooting purposes;
+having the \scaresolver containers remain on the \cxflowplusplus runtime container will consume a
+significant amount of disk space over time.
+
+\subsubsection{\texttt{resolver.defaults} as Environment Variables}
+
+The above example of the \texttt{resolver.defaults} YAML has the equivalent environment variables:
+
+\begin{code}{\texttt{resolver.defaults}}{Environment Variables}{}
+RESOLVER_DEFAULTS_CONTAINTERTTL=15m
+RESOLVER_DEFAULTS_EXECTIMEOUT=10m
+RESOLVER_DEFAULTS_DEFAULTTAG=default
+RESOLVER_DEFAULTS_DELETE=False
+\end{code}
+
+\subsection{\texttt{resolver.images}}
+
+This section is where the image parameters are set for a container matching a tag that indicates 
+which container image to use when invoking \scaresolver.
+
+Each dictionary of key/value pairs configured under the \texttt{resolver.images} uses the key value 
+as the image tag.  The listing below shows an example of a configuration for images 
+tagged \texttt{default} and \texttt{node}.  The containers defined would be instances of 
+an \scaresolver image derived from an appropriate build environment base image.
+
+In each of the sections, the \texttt{containerttl} and \texttt{exectimeout} values are optional.  
+If not provided, the corresponding values from the \texttt{resolver.defaults} section will be used.\\
+
+
+\begin{code}{\texttt{resolver.images}}{YAML Structure}{}
+resolver:
+    images:
+        default:
+            container: my-default-container:latest
+            containerttl: 5m
+            exectimeout: 10m
+            execenv:
+                FOO: BAZ
+            execparams:
+                - --log-level=Verbose
+        node: 
+            container: my-node-container:latest
+            execenv:
+                FOO: BAR
+            envpropagate:
+                - MY_ENVIRONMENT_VARIABLE1
+                - MY_ENVIRONMENT_VARIABLE2
+\end{code}
+
+
+
+\noindent\\\texttt{resolver.images.<tag>.container} - (\textbf{Required}) The container image tag 
+name associated with the configuration tag that will be resolved by the dispatcher
+during the \cxflowplusplus scan execution.  
+
+\noindent\\\texttt{resolver.images.<tag>.containerttl} - (\textbf{Optional})  Uses the 
+corresponding value from \texttt{resolver.defaults} if not provided.
+
+\noindent\\\texttt{resolver.images.<tag>.exectimeout} - (\textbf{Optional})  Uses the corresponding 
+value from \texttt{resolver.defaults} if not provided.
+
+\noindent\\\texttt{resolver.images.<tag>.execenv} - (\textbf{Optional}) A dictionary of key/value 
+pairs that are emitted in the container's environment when the container image is executed.  
+Entries with key values that match keys defined in \texttt{resolver.images.<tag>.envpropagate} 
+will have the value overwritten by the value found in the propagated environment value.
+
+\noindent\\\texttt{resolver.images.<tag>.envpropagate} - (\textbf{Optional}) An array of names of 
+environment variables in the \cxflowplusplus environment that will be propagated as-is to the 
+executing image environment.
+
+\noindent\\\texttt{resolver.images.<tag>.execparams} - (\textbf{Optional}) An array of values passed
+to \scaresolver at the end of all other parameters needed to control the
+execution of \scaresolver.  The values here are mainly intended to pass configuration
+values to dependency resolution tools invoked by \scaresolver.  Passing other values
+to \scaresolver may cause operational conflicts.
+
+\noindent\\\texttt{resolver.images.<tag>.dockerparams} - (\textbf{Optional}) A key/value dictionary 
+that follows the \texttt{**kwargs} key/value pairs supported in the 
+\href{https://docker-py.readthedocs.io/en/stable/containers.html#docker.models.containers.ContainerCollection.run}{Docker Python API} 
+\texttt{run} method.
+
+\subsubsection{\texttt{resolver.images} as Environment Variables}
+
+\noindent\\The above example of the `resolver.images` YAML has the equivalent environment variables:\\
+
+\begin{code}{\texttt{resolver.images}}{Environment Variables}{}
+RESOLVER_IMAGES_DEFAULT_CONTAINER=my-default-container:latest
+RESOLVER_IMAGES_DEFAULT_CONTAINERTTL=5m
+RESOLVER_IMAGES_DEFAULT_EXECTIMEOUT=10m
+RESOLVER_IMAGES_DEFAULT_EXECENV_FOO=BAZ
+RESOLVER_IMAGES_DEFAULT_EXECPARAMS_1=--log-level=Verbose
+RESOLVER_IMAGES_NODE_CONTAINER=my-node-container:latest
+RESOLVER_IMAGES_NODE_EXECENV_FOO=BAR
+RESOLVER_IMAGES_NODE_ENVPROPAGATE_1=MY_ENVIRONMENT_VARIABLE1
+RESOLVER_IMAGES_NODE_ENVPROPAGATE_2=MY_ENVIRONMENT_VARIABLE2
+\end{code}
