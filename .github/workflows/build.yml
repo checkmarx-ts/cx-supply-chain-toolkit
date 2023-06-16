@@ -9,24 +9,18 @@ on:
           description: 'Set to true if published build is a prerelease'
           type: boolean
           required: true
-        republish:
-          required: false
-          type: boolean
-          default: false
-    
       secrets:
         PACKAGE_USER:
           required: true
         PACKAGE_PAT:
           required: true
        
-          
+env:
+  DOCKER_REPO: ghcr.io/${{ github.repository_owner }}/cx-supply-chain-toolkit/enhanced-cxflow-scaresolver
+                
 jobs:
-
   publish-enhanced-cxflow:
     runs-on: ubuntu-latest
-    env:
-      DOCKER_REPO: ghcr.io/${{ github.repository_owner }}/cx-supply-chain-toolkit/enhanced-cxflow-scaresolver
     steps:
       - name: Set up Docker Buildx
         id: buildx
@@ -57,69 +51,123 @@ jobs:
         run: |
           BRIEFTAG=${{ inputs.tag }}
           FULLTAG=$BRIEFTAG-cxflow-${{ env.CXFLOW_VERSION }}
-          docker build -f legacy/enhanced-cxflow-scaresolver/Dockerfile -t $DOCKER_REPO:$FULLTAG -t $DOCKER_REPO:$BRIEFTAG SAST/enhanced-cxflow-scaresolver
+          docker build -f legacy/enhanced-cxflow-scaresolver/Dockerfile -t $DOCKER_REPO:$FULLTAG -t $DOCKER_REPO:$BRIEFTAG legacy/enhanced-cxflow-scaresolver
           [ ${{ inputs.prerelease }} = false ] && docker tag $DOCKER_REPO:$FULLTAG $DOCKER_REPO:latest || :
           docker push --all-tags $DOCKER_REPO
           
 
-    #   - name: Generate publication notes
-    #     run: |
-    #       echo CxAnalytix v${{ inputs.tag }}\<P\> > release.md
-    #       pushd artifacts
-    #       sha256sum --tag $(ls *win-x64.zip) >> ../release.md
-    #       sha256sum --tag $(ls *linux-x64.zip) >> ../release.md
-    #       popd
-    #       echo \<P\> >> release.md
-    #       echo docker pull $DOCKER_REPO:v${{ inputs.tag }} >> release.md
-
-    #   - name: Edit manual's version stamp
-    #     run: echo ${{ inputs.tag }} > manual/version.tex
-
-    #   - name: Build PDF Manual
-    #     uses: xu-cheng/latex-action@v2
-    #     with:
-    #       root_file: manual/cxanalytix.tex
-    #       work_in_root_file_dir: true
-
-    #   - name: Build PDF Release Notes
-    #     uses: xu-cheng/latex-action@v2
-    #     with:
-    #       root_file: release_notes/release_notes.tex
-    #       work_in_root_file_dir: true
+  compile-build-environment-release-zip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Code @ tag ${{ inputs.tag }}
+        uses: actions/checkout@v3
+        with:
+          ref: refs/tags/${{ inputs.tag }}
       
-    #   - name: Move documentation artifacts
-    #     run: |
-    #       mv manual/cxanalytix.pdf artifacts/CxAnalytix_Manual_${{ inputs.tag }}.pdf
-    #       mv release_notes/release_notes.pdf artifacts/CxAnalytix_ReleaseNotes_${{ inputs.tag }}.pdf
+      - name: Create Zip
+        run: |
+          mkdir artifacts
+          pushd build-environment
+          zip -r ../artifacts/build-environment-${{ inputs.tag }}.zip *
+          zip -d ../artifacts/build-environment-${{ inputs.tag }}.zip tests/*
+          zip -d ../artifacts/build-environment-${{ inputs.tag }}.zip tests
+          popd
+      - name: Generate publication notes
+        run: |
+          echo Checkmarx Supply Chain Toolkit ${{ inputs.tag }}\<P\> > release.md
+          echo build-environment-${{ inputs.tag }}.zip SHA256: >> release.md
+          sha256sum --tag artifacts/build-environment-${{ inputs.tag }}.zip | sha256sum --tag docs/_main.tex | cut -d "=" -f2 >> release.md
+          echo \<P\> >> release.md
+          echo docker pull $DOCKER_REPO:v${{ inputs.tag }} >> release.md
+      - name: Upload build-environment zip
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-environment-zip
+          path: artifacts/build-environment-${{ inputs.tag }}.zip
+      - name: Upload publication notes
+        uses: actions/upload-artifact@v3
+        with:
+          name: release.md
+          path: release.md
+  
+  compile-manual-zip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Code @ tag ${{ inputs.tag }}
+        uses: actions/checkout@v3
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+        
+      - name: Edit manual's version stamp
+        run: echo ${{ inputs.tag }} > docs/version.tex
 
+      - name: Build PDF Manual
+        uses: xu-cheng/latex-action@v2
+        with:
+          root_file: docs/_main.tex
+          work_in_root_file_dir: true
 
-    #   - name: Create GitHub Release
-    #     id: create_release
-    #     uses: ncipollo/release-action@v1
-    #     with:
-    #       allowUpdates: true
-    #       artifactErrorsFailBuild: true
-    #       artifacts: artifacts/*.zip
-    #       artifactContentType: application/zip
-    #       bodyFile: release.md
-    #       name: v${{ inputs.tag }}
-    #       prerelease: ${{ inputs.prerelease }}
-    #       replacesArtifacts: true
-    #       tag: v${{ inputs.tag }}
+      - name: Rename PDF Manual
+        run: mv docs/_main.pdf docs/manual-${{ inputs.tag }}.pdf
+
+      - name: Upload manual
+        uses: actions/upload-artifact@v3
+        with:
+          name: manual
+          path: docs/manual-${{ inputs.tag }}.pdf
+  
+      - name: Build PDF Release Notes
+        uses: xu-cheng/latex-action@v2
+        with:
+          root_file: release_notes/release_notes.tex
+          work_in_root_file_dir: true
+
+      - name: Rename PDF Release Notes
+        run: mv release_notes/release_notes.pdf release_notes/release-notes-${{ inputs.tag }}.pdf
+        
+      - name: Upload release notes
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-notes
+          path: release_notes/release-notes-${{ inputs.tag }}.pdf
+  
+  publish-release:
+    runs-on: ubuntu-latest
+    needs: [compile-manual-zip, compile-build-environment-release-zip, publish-enhanced-cxflow]
+    steps:
+
+      - name: Download manual
+        uses: actions/download-artifact@v3
+        with:
+          name: manual
+
+      - name: Download release notes
+        uses: actions/download-artifact@v3
+        with:
+          name: release-notes
+
+      - name: Download publication notes
+        uses: actions/download-artifact@v3
+        with:
+          name: release.md
+
+      - name: Download build-environment zip
+        uses: actions/download-artifact@v3
+        with:
+          name: build-environment-zip
+    
+      - name: Create GitHub Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          artifacts: ./*.zip,./*.pdf
+          artifactContentType: application/zip
+          bodyFile: release.md
+          name: ${{ inputs.tag }}
+          prerelease: ${{ inputs.prerelease }}
+          replacesArtifacts: true
+          tag: ${{ inputs.tag }}
           
-    #   - name: Update Documentation for GitHub Release
-    #     id: update_release
-    #     uses: ncipollo/release-action@v1
-    #     with:
-    #       allowUpdates: true
-    #       artifactErrorsFailBuild: true
-    #       artifacts: artifacts/*.pdf
-    #       artifactContentType: application/pdf
-    #       omitBodyDuringUpdate: true
-    #       name: v${{ inputs.tag }}
-    #       omitNameDuringUpdate: true
-    #       prerelease: ${{ inputs.prerelease }}
-    #       replacesArtifacts: false
-    #       removeArtifacts: false
-    #       tag: v${{ inputs.tag }}
-          
+         
