@@ -1,0 +1,155 @@
+\chapter{\cxtoolkit Maintainer's Guide}\label{chap:maintainers_guide}
+
+
+This section is primarily for the maintainers of the \cxtoolkit.  It is intended
+to document any aspects needed to publish a successful release build.
+
+
+\section{GitHub Action Configuration Pre-Requisites}
+
+Some GitHub action variables and secrets are required to be defined in the repository
+for the workflows to work.  Anyone that forks the repository and wants to execute
+the workflows will need to define these elements if they wish to test the workflows.
+
+\subsection{Action Variables}
+
+Action variables do not store sensitive information.  Please ensure any additional
+variables added never need to store sensitive information.
+
+\subsubsection{Variable: WORKFLOW\_BUILD\_COMPAT}
+
+This is primarily for executing container build unit tests.  These tests will typically
+run on a developers desktop without the need for this variable.  The variable adds options
+to the \texttt{docker build} command so that it is compatible with the GitHub workflow
+execution environment.  It is currently defined as:
+
+\noindent\\\texttt{----load ----build-arg GROUP\_ID=123 ----build-arg USER\_ID=1001}
+
+\subsection{Action Secrets}
+
+The secrets are used in the GitHub action workflows and are used for various functions
+that execute inside the workflow.  Some of these values may be required to run some
+of the container build unit tests.
+
+\subsubsection{Secret: SCA\_TENANT}
+This is a \cxsca tenant name used to perform unit tests.  If this is not provided,
+the unit tests that perform scans will be skipped.
+
+\subsubsection{Secret: SCA\_USER}
+This is a user in the \cxsca tenant used to perform unit tests.  If this is not provided,
+the unit tests that perform scans will be skipped.
+
+\subsubsection{Secret: SCA\_PASSWORD}
+This is the password for a user in the \cxsca tenant used to perform unit tests.  
+If this is not provided,
+the unit tests that perform scans will be skipped.
+
+\subsubsection{Secret: PACKAGE\_USER}
+This is the GitHub user that is used for performing workflows that
+publish releases and packages.  If this is not provided, the workflow actions
+will fail.
+
+\subsubsection{Secret: PACKAGE\_PAT}
+
+This is a PAT associated with the GitHub user defined as the secret
+\texttt{PACKAGE\_USER}. If this is not provided, the workflow actions
+will fail.
+
+\section{Publishing Releases}
+
+Releases and Pre-Releases are published by workflows found in the GitHub Action
+tab on the repository.  The Action tab requires the appropriate permissions
+to view; if you're not a member of the maintainer team for \cxtoolkit, you will
+not see the action tab.
+
+\subsection{Publish a Release or a Pre-Release}
+
+Publishing a release is as simple as selecting the \texttt{Publish a Release}
+workflow in the GitHub Actions tab.  To the right of the screen you will see
+a "Run Workflow" button.  When clicked, you will have some options to configure:
+
+\begin{enumerate}
+    \item \textbf{Branch} - Select a branch as the source of the release generation.  For
+    releases, this should be \texttt{master}.  Pre-releases can be generated from
+    any branch as needed.
+    \item \textbf{Version tag} - Provide a release version in the form of "x.x".  This value
+    will be used to tag the repository and provide version identification information
+    for release artifacts.
+    \item \textbf{Prelease} - A checkbox that, if checked, will generate a pre-release.
+\end{enumerate}
+
+There can be many pre-releases published for a version but only one release of a version.
+The workflows will perform code tagging as appropriate for the type of release.  The
+workflows will also attempt to validate that the source code is tagged properly before
+executing and that tags are removed in the event of a workflow failure.
+
+\subsubsection{Release Publishing Workflows}
+
+A release workflow will fail if a release of the same version has already been
+set as a tag in the repo.  While it is possible to work around this by manually
+removing repo tags and releases, it is not advised to do so to re-publish a release.
+If re-publication of a release is needed, please see Section \ref{sec:republish}
+
+
+\subsubsection{Pre-Release Publishing Workflows}
+
+Each pre-release will build a tag from the version for which it is a pre-release
+and include the build workflow iteration number as part of the tag.  This will allow
+for multiple pre-releases to be published for any given release version.
+
+\subsection{Republishing a Release}\label{sec:republish}
+
+Republication of a release is is similar to publishing a release;
+all that is required is selecting the \texttt{Republish a Release}
+workflow in the GitHub Actions tab.  To the right of the screen you will see
+a "Run Workflow" button.  When clicked, you will have some options to configure:
+
+\begin{enumerate}
+    \item \textbf{Branch} - Select a branch as the source of the release generation.
+    If the re-published release branch and the published release branch differ, things
+    may not work so well.
+    \item \textbf{Version tag} - Provide a release version in the form of "x.x".  
+    This value will be used to fetch the code at the proper tag in the release
+    repository.
+    \item \textbf{Tag packages as "latest"} - This will set the package tag
+    for any published images as \texttt{latest}. 
+\end{enumerate}
+
+Republication of a release is limited to full releases only.  The concept of
+republishing a release is typically so that newer versions of \cxflow can be
+re-packaged into \cxflowplusplus published container images.  Future packaged
+components that work similarly will follow this same workflow re-publication
+logic.  There are  some things to keep in mind when re-publishing a release:
+
+\begin{itemize}
+    \item A release tag must exist for the version being re-published.
+    \item The code from the \cxtoolkit is not changed in the release since
+    the packaging is performed using code at the release tag.
+    \item It will be a good idea to only set the package tag of the latest
+    release to \texttt{latest}.  This allows older versions of \cxtoolkit
+    to be republished with newer versions of external components incorporated
+    in published container images.
+    \item While it is possible to set the \texttt{latest} tage on a republished
+    image for an older version of the \cxtoolkit, users may have configurations
+    that are not backwards compatible.  It is a good idea to avoid re-tagging
+    older container images as \texttt{latest}.
+\end{itemize}
+
+\section{\cxflowplusplus Container Image Tagging}
+
+The \cxflowplusplus container image is tagged with the \cxtoolkit release or pre-release
+tag at the time of the publication.  An additional tag with the \cxtoolkit version
+and the incorporated \cxflow version is also provided.  Users of version 1.1,
+for example, need only reference the tag \texttt{v1.1} to get the latest version
+of \cxflowplusplus.  If \cxflow has a new version released, a republished version 1.1
+will retrieve the container image with the latest \cxflow.
+
+It will generally be the case that testing will be performed with \cxflow
+versions that are published as future releases.  It is not the intention of the
+\cxtoolkit to publish a container image for each past historical version of \cxflow.
+As new versions of the \cxtoolkit are released, they will incorporate the latest
+version of \cxflow.
+
+If a container image tag for a specific version of \cxflow incorporated into the 
+\cxflowplusplus image is not available, please refer to Section \ref{sec:CXFLOWALTJARURL}
+for options to retrieve and run a specific \cxflow release at startup.
