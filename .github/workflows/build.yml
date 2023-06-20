@@ -9,6 +9,10 @@ on:
           description: 'Set to true if published build is a prerelease'
           type: boolean
           required: true
+        tag-packages-as-latest:
+          description: 'Tag any re-published container images with "latest"'
+          type: boolean
+          default: true
       secrets:
         PACKAGE_USER:
           required: true
@@ -52,7 +56,7 @@ jobs:
           BRIEFTAG=${{ inputs.tag }}
           FULLTAG=$BRIEFTAG-cxflow-${{ env.CXFLOW_VERSION }}
           docker build -f legacy/enhanced-cxflow-scaresolver/Dockerfile -t $DOCKER_REPO:$FULLTAG -t $DOCKER_REPO:$BRIEFTAG legacy/enhanced-cxflow-scaresolver
-          [ ${{ inputs.prerelease }} = false ] && docker tag $DOCKER_REPO:$FULLTAG $DOCKER_REPO:latest || :
+          [ ${{ inputs.prerelease }} = false -a ${{ inputs.tag-packages-as-latest }} = true ] && docker tag $DOCKER_REPO:$FULLTAG $DOCKER_REPO:latest || :
           docker push --all-tags $DOCKER_REPO
           
 
@@ -78,7 +82,7 @@ jobs:
           echo build-environment-${{ inputs.tag }}.zip SHA256: >> release.md
           sha256sum --tag artifacts/build-environment-${{ inputs.tag }}.zip | sha256sum --tag docs/_main.tex | cut -d "=" -f2 >> release.md
           echo \<P\> >> release.md
-          echo docker pull $DOCKER_REPO:v${{ inputs.tag }} >> release.md
+          echo docker pull $DOCKER_REPO:${{ inputs.tag }} >> release.md
       - name: Upload build-environment zip
         uses: actions/upload-artifact@v3
         with:
