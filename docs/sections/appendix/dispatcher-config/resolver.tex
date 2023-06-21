@@ -89,7 +89,10 @@ tagged \texttt{default} and \texttt{node}.  The containers defined would be inst
 an \scaresolver image derived from an appropriate build environment base image.
 
 In each of the sections, the \texttt{containerttl} and \texttt{exectimeout} values are optional.  
-If not provided, the corresponding values from the \texttt{resolver.defaults} section will be used.\\
+If not provided, the corresponding values from the \texttt{resolver.defaults} section will be used.
+
+\noindent\\\textbf{Note:} Image tags should only contain alphanumeric characters to be compatible with defining
+image configurations with environment variables.\\
 
 
 \begin{code}{\texttt{resolver.images}}{YAML Structure}{}
