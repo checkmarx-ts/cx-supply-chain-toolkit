@@ -10,8 +10,19 @@ class ConfigProvider:
     
     def __init__(self, the_yaml):
         self.__yaml = the_yaml
-        tag_defs = ConfigProvider._navigate_or_else(self.__yaml, lambda: None, ["resolver", "images"])
+        tag_defs = ConfigProvider._navigate_or_else(self.__yaml, lambda: {}, ["resolver", "images"])
+
+        # It is possible there are no tags defined in a file, so resolve others defined in
+        # environment variables.
+        env_tag_defs = ConfigProvider.__find_matching_environment_keys(f"^RESOLVER_IMAGES_.*")
+
+        for env_tag_def in env_tag_defs:
+            components = re.match("^RESOLVER_IMAGES_(?P<tag>.+?)_.+$", env_tag_def).groupdict()
+            if not components["tag"] in tag_defs.keys():
+                tag_defs[components["tag"]] = {}
+
         self.__tags = { tag:self.__load_tag_config(tag) for tag in tag_defs.keys()} if not tag_defs == None else {}
+
 
 
     @staticmethod
@@ -131,7 +142,8 @@ class ConfigProvider:
             self._exec_timeout =  ConfigProvider.__timedelta_from_string \
                 (str(ConfigProvider._navigate_or_else(self.__yaml, lambda: "30m", ["resolver","defaults","exectimeout"])))
 
-            self._exec_timeout =  ConfigProvider.__environment_override(self._exec_timeout, "RESOLVER_DEFAULTS_EXECTIMEOUT")
+            self._exec_timeout =  ConfigProvider.__environment_override(self._exec_timeout, "RESOLVER_DEFAULTS_EXECTIMEOUT", 
+                                                                        lambda x: ConfigProvider.__timedelta_from_string(x))
        
         return self._exec_timeout
 
@@ -170,7 +182,7 @@ class ConfigProvider:
 
     def __load_tag_config(self, tag):
         image_configs = ConfigProvider._navigate_or_else(self.__yaml, lambda: None, ["resolver", "images"])
-        image_config = image_configs[tag]
+        image_config = image_configs[tag] if not image_configs is None else {}
 
         if image_config == None and self.default_tag in image_configs.keys():
             return self.__load_tag_config(self.default_tag)
