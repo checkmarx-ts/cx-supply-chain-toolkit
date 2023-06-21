@@ -2,7 +2,7 @@
     "python.testing.unittestArgs": [
         "-v",
         "-s",
-        "./sandboxed-cxflow/dispatcher",
+        "./legacy/enhanced-cxflow-scaresolver/dispatcher",
         "-p",
         "test_*.py"
     ],
