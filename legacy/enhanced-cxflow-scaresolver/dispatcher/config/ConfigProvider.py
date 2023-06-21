@@ -18,8 +18,8 @@ class ConfigProvider:
 
         for env_tag_def in env_tag_defs:
             components = re.match("^RESOLVER_IMAGES_(?P<tag>.+?)_.+$", env_tag_def).groupdict()
-            if not components["tag"] in tag_defs.keys():
-                tag_defs[components["tag"]] = {}
+            if not components["tag"].lower() in tag_defs.keys():
+                tag_defs[components["tag"].lower()] = {}
 
         self.__tags = { tag:self.__load_tag_config(tag) for tag in tag_defs.keys()} if not tag_defs == None else {}
 
