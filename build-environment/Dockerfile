@@ -2,6 +2,7 @@ ARG BASE=alpine:latest
 
 ##########################################################################
 FROM ${BASE} AS base-config
+USER root
 
 RUN mkdir -p /sandbox/scalogs && \
     chmod -R 730 /sandbox/scalogs && \
@@ -53,6 +54,7 @@ RUN chmod -R 750 /sandbox/resolver
 FROM base-config AS resolver-alpine-bare
 ARG GROUP_ID=1000
 ARG USER_ID=1000
+USER root
 
 COPY --from=extracted-musl /sandbox/resolver/* /sandbox/resolver/
 
@@ -75,13 +77,14 @@ ENTRYPOINT ["/entrypoint.sh"]
 FROM base-config AS resolver-debian-bare
 ARG GROUP_ID=1000
 ARG USER_ID=1000
+USER root
 
 COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
 
-RUN apt update && \
-    apt install -y ca-certificates && \
+RUN apt-get update && \
+    apt-get install -y ca-certificates && \
     ln -s $(which bash) /usr/bin/bsh && \
-    apt clean
+    apt-get clean
 
 SHELL ["/usr/bin/bsh", "-c"]
 
@@ -108,6 +111,7 @@ ENTRYPOINT ["/entrypoint.sh"]
 FROM base-config AS resolver-redhat-bare
 ARG GROUP_ID=1000
 ARG USER_ID=1000
+USER root
 
 COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
 
@@ -134,6 +138,7 @@ ENTRYPOINT ["/entrypoint.sh"]
 FROM base-config AS resolver-amazon-bare
 ARG GROUP_ID=1000
 ARG USER_ID=1000
+USER root
 
 COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
 
