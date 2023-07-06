@@ -16,6 +16,7 @@
 \usepackage{tabularx}
 \usepackage{xspace}
 \usepackage{xparse}
+\usepackage{tabto}
 \usepackage{amssymb, amsmath}
 \usepackage[many]{tcolorbox}
 \tcbuselibrary{listings}
@@ -30,13 +31,11 @@
 \newcommand{\cxtoolkit}{\href{https://github.com/checkmarx-ts/cx-supply-chain-toolkit}{\textbf{Checkmarx Supply Chain Toolkit}}\xspace}
 \newcommand{\cxtoolkitpath}[2]{\href{https://github.com/checkmarx-ts/cx-supply-chain-toolkit/#1}{\textbf{Checkmarx Supply Chain Toolkit #2}\xspace}}
 
-\newcommand{\cxflowplusplus}{\href{https://github.com/orgs/checkmarx-ts/packages}{\textbf{CxFlow++}}\xspace}
+\newcommand{\cxflowplusplus}{\href{https://github.com/orgs/checkmarx-ts/packages/container/package/cx-supply-chain-toolkit\%2Fenhanced-cxflow-scaresolver}{\textbf{CxFlow++}}\xspace}
 
-\newcommand{\cxflowplusplustag}{\texttt{cxflowplusplus:latest}}
+\newcommand{\cxflowplusplustag}{\texttt{ghcr.io/checkmarx-ts/cx-supply-chain-toolkit/enhanced-cxflow-scaresolver:latest}}
 
 \newcommand{\sysbox}{\href{https://github.com/nestybox/sysbox}{\textbf{Sysbox}}\xspace}
-
-
 
 \begin{document}
 
@@ -62,10 +61,14 @@
 
 \chapter*{Quickstart}
 
-If you are not familiar with supply chain scanning and
-dependency resolution or want to understand how it works, please
-start with the Part \ref{part:background}.
+This document has embedded links that link to external web sites and other
+parts of the document.  If you are viewing this document in Microsoft's Edge
+browser, those links are not highlighted.  It is recommended that you view
+this document in a PDF reader other than the one provided in Microsoft Edge.
 
+\noindent\\If you are not familiar with supply chain scanning and
+dependency resolution or want to understand better how it works, please
+start with the Part \ref{part:background}.
 
 \noindent\\If you are trying to integrate supply chain scanning into
 you SDLC, Part \ref{part:operation} covers several related topics:

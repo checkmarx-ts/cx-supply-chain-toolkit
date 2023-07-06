@@ -58,7 +58,7 @@ The minimum recommended environment for \cxflowplusplus is:
 \begin{itemize}
     \item 4 Cores
     \item 32 GB RAM
-    \item 150GB of disk space
+    \item 200GB of disk space
     \item Linux OS with kernel >= 5.12 if using \sysbox
 \end{itemize}
 
@@ -76,7 +76,9 @@ attempting to execute docker containers inside the running container.
 One method of enabling docker-in-docker is to execute containers in privileged mode.
 Running \cxflowplusplus in privileged mode can be done like so:
 
-\noindent\\\texttt{docker run -privileged -d ----restart unless-stopped \cxflowplusplustag}
+
+\noindent\\\texttt{docker run -privileged -d ----restart unless-stopped \textbackslash }
+\noindent\\ \tabto{5mm} \texttt{\cxflowplusplustag}
 
 \noindent\\\textbf{WARNING}
 \noindent\\It is generally considered a bad security practice to run a docker container in privileged mode.
@@ -89,7 +91,8 @@ An alternative to executing docker in privileged mode is to use \sysbox as a run
 and has a requirement of a kernel version >= 5.12.  Appendix \ref{chap:sysbox_install} has
 a procedure that can be used to install \sysbox manually on a Linux OS.
 
-\noindent\\\texttt{docker run ----runtime=sysbox-runc -d ----restart unless-stopped \cxflowplusplustag}
+\noindent\\\texttt{docker run ----runtime=sysbox-runc -d ----restart unless-stopped \textbackslash}
+\noindent\\ \tabto{5mm} \texttt{\cxflowplusplustag}
 
 \subsection{Logging}
 
