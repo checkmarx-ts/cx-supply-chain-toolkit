@@ -58,7 +58,14 @@ jobs:
           docker build -f legacy/enhanced-cxflow-scaresolver/Dockerfile -t $DOCKER_REPO:$FULLTAG -t $DOCKER_REPO:$BRIEFTAG legacy/enhanced-cxflow-scaresolver
           [ ${{ inputs.prerelease }} = false -a ${{ inputs.tag-packages-as-latest }} = true ] && docker tag $DOCKER_REPO:$FULLTAG $DOCKER_REPO:latest || :
           docker push --all-tags $DOCKER_REPO
-          
+          docker save -o enhanced-cxflow-scaresolver-$FULLTAG.tar $DOCKER_REPO:$FULLTAG
+          zip enhanced-cxflow-scaresolver-$FULLTAG.tar.zip enhanced-cxflow-scaresolver-$FULLTAG.tar
+      - name: Upload image tarball
+        uses: actions/upload-artifact@v3
+        with:
+          name: enhanced-cxflow-scaresolver-tarball
+          path: enhanced-cxflow-scaresolver*.zip
+  
 
   compile-build-environment-release-zip:
     runs-on: ubuntu-latest
@@ -159,7 +166,12 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build-environment-zip
-    
+
+      - name: Download enhanced-cxflow-scaresolver-tarball
+        uses: actions/download-artifact@v3
+        with:
+          name: enhanced-cxflow-scaresolver-tarball
+      
       - name: Create GitHub Release
         id: create_release
         uses: ncipollo/release-action@v1
