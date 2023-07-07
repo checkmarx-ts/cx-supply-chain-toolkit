@@ -101,7 +101,7 @@ jobs:
           name: release.md
           path: release.md
   
-  compile-manual-zip:
+  compile-manual:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Code @ tag ${{ inputs.tag }}
@@ -144,7 +144,7 @@ jobs:
   
   publish-release:
     runs-on: ubuntu-latest
-    needs: [compile-manual-zip, compile-build-environment-release-zip, publish-enhanced-cxflow]
+    needs: [compile-manual, compile-build-environment-release-zip, publish-enhanced-cxflow]
     steps:
 
       - name: Download manual
@@ -185,5 +185,18 @@ jobs:
           prerelease: ${{ inputs.prerelease }}
           replacesArtifacts: true
           tag: ${{ inputs.tag }}
-          
+
+  artifact-cleanup:
+    runs-on: ubuntu-latest
+    needs: [publish-release]
+    steps:
+      - uses: geekyeggo/delete-artifact@v2
+        with:
+          name: |
+            enhanced-cxflow-scaresolver-tarball
+            build-environment-zip
+            release.md
+            release-notes
+            manual
+
          
