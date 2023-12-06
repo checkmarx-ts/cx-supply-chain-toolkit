@@ -51,12 +51,22 @@ RUN chmod -R 750 /sandbox/resolver
 
 
 ##########################################################################
+FROM alpine:latest AS cxone-extracted-linux
+WORKDIR /sandbox/cxonecli
+ADD https://github.com/Checkmarx/ast-cli/releases/latest/download/ast-cli_linux_x64.tar.gz /sandbox/cxonecli
+RUN tar -xzf ast-cli_linux_x64.tar.gz && \
+    rm -f ast-cli_linux*.tar.gz
+RUN chmod -R 750 /sandbox/cxonecli
+
+
+##########################################################################
 FROM base-config AS resolver-alpine-bare
 ARG GROUP_ID=1000
 ARG USER_ID=1000
 USER root
 
 COPY --from=extracted-musl /sandbox/resolver/* /sandbox/resolver/
+COPY --from=cxone-extracted-linux /sandbox/cxonecli/* /sandbox/cxonecli/
 
 RUN apk add -q libstdc++ bash && \
     [[ "$(getent group ${GROUP_ID})" = "" ]] && { addgroup -g ${GROUP_ID} sca ; TARGET_GROUP=sca ; } || TARGET_GROUP=$(getent group ${GROUP_ID} | cut -d ':' -f1) && \
@@ -80,6 +90,7 @@ ARG USER_ID=1000
 USER root
 
 COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
+COPY --from=cxone-extracted-linux /sandbox/cxonecli/* /sandbox/cxonecli/
 
 RUN apt-get update && \
     apt-get install -y ca-certificates && \
@@ -114,6 +125,7 @@ ARG USER_ID=1000
 USER root
 
 COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
+COPY --from=cxone-extracted-linux /sandbox/cxonecli/* /sandbox/cxonecli/
 
 RUN \
     [[ $(command -v microdnf) != "" ]] && { microdnf install -y --nodocs shadow-utils which ; microdnf clean all ; } || : && \
@@ -141,6 +153,7 @@ ARG USER_ID=1000
 USER root
 
 COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
+COPY --from=cxone-extracted-linux /sandbox/cxonecli/* /sandbox/cxonecli/
 
 RUN yum install -y shadow-utils which && \
     yum clean all && \
