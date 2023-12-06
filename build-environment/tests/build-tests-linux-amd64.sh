@@ -68,9 +68,9 @@ testBuildRedhatUbi8MinimalSuccess()
     assertEquals 0 $?
 }
 
-testBuildBuildpackDepsKineticSuccess()
+testBuildBuildpackDepsLatestSuccess()
 {
-    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=buildpack-deps:kinetic --target=resolver-debian ..
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=buildpack-deps:latest --target=resolver-debian ..
     assertEquals 0 $?
 }
 
