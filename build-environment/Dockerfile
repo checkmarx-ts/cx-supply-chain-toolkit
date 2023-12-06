@@ -71,7 +71,7 @@ COPY --from=cxone-extracted-linux /sandbox/cxonecli/* /sandbox/cxonecli/
 RUN apk add -q libstdc++ bash && \
     [[ "$(getent group ${GROUP_ID})" = "" ]] && { addgroup -g ${GROUP_ID} sca ; TARGET_GROUP=sca ; } || TARGET_GROUP=$(getent group ${GROUP_ID} | cut -d ':' -f1) && \
     addgroup root $TARGET_GROUP && \
-    [[ "$(getent passwd ${USER_ID})" = "" ]] && {  adduser -h -D -s /sbin/nologin -g $TARGET_GROUP resolver ; TARGET_NAME=resolver ; } || TARGET_NAME=$(getent passwd ${USER_ID} | cut -d ':' -f1) && \
+    [[ "$(getent passwd ${USER_ID})" = "" ]] && {  adduser -u ${USER_ID} -D -s /sbin/nologin -G $TARGET_GROUP resolver ; TARGET_NAME=resolver ; } || TARGET_NAME=$(getent passwd ${USER_ID} | cut -d ':' -f1) && \
     for cert in $(ls /cacerts); do cat /cacerts/$cert >> /etc/ssl/certs/ca-certificates.crt; done && \
     echo IMAGE BUILD UID:GID: $TARGET_NAME:$TARGET_GROUP as $USER_ID:$GROUP_ID && \
     chown -R root:$TARGET_GROUP /sandbox
