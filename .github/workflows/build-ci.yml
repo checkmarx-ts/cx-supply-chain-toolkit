@@ -53,6 +53,7 @@ jobs:
           TEST_TENANT: ${{ secrets.SCA_TENANT }}
           TEST_USER: ${{ secrets.SCA_USER }}
           TEST_PASSWORD: ${{ secrets.SCA_PASSWORD }}
+          TEST_APIKEY: ${{ secrets.CXONE_APIKEY }}
         run: |
           cd ${{ github.workspace }}/build-environment/tests
           ./execute-tests-linux-amd64.sh
