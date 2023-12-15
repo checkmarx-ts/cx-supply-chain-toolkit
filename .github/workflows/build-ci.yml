@@ -17,10 +17,25 @@ jobs:
         with:
           install: true
           platforms: linux/amd64
-      - name: Execute Sandbox Build Tests
+      - name: Execute Sandbox Build Positive Tests
         run: |
           cd ${{ github.workspace }}/build-environment/tests
           ./build-tests-linux-amd64.sh
+
+  image-negative-build-unit-tests-linux-amd64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Code
+        uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          install: true
+          platforms: linux/amd64
+      - name: Execute Sandbox Build Negative Tests
+        run: |
+          cd ${{ github.workspace }}/build-environment/tests
+          ./build-negative-tests-linux-amd64.sh
 
   execution-unit-tests-linux-amd64:
     runs-on: ubuntu-latest
