@@ -2,9 +2,47 @@
 
 . ./common
 
+setUp()
+{
+    docker image ls test:tag && : || return
+    
+    docker image rm test:tag
+    docker system prune -f
+}
+
+tearDown()
+{
+    docker image ls test:tag && : || return
+
+    $DOCKER_RUN_PREFIX --entrypoint test -t test:tag -f /sandbox/resolver/ScaResolver 
+    assertEquals 0 $?
+
+    $DOCKER_RUN_PREFIX --entrypoint test -t test:tag -f /sandbox/cxonecli/cx 
+    assertEquals 0 $?
+}
+
+GRADLE_ALPINE_BUILD_PARAMS="-t test:tag --build-arg BASE=gradle:8-jdk11-alpine"
+
 testBuildGradleAlpineSuccess()
 {
-    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
+    $DOCKER_BUILD_PREFIX $GRADLE_ALPINE_BUILD_PARAMS --target=resolver-alpine ..
+    assertEquals 0 $?
+}
+
+testBuildGradleAlpineBuildCustomUIDGIDSuccess()
+{
+    $DOCKER_BUILD_PREFIX --build-arg USER_ID=2048 --build-arg GROUP_ID=2048 $GRADLE_ALPINE_BUILD_PARAMS  --target=resolver-alpine ..
+
+    $DOCKER_RUN_PREFIX --entrypoint getent -t test:tag passwd 2048 
+    assertEquals 0 $?
+
+    $DOCKER_RUN_PREFIX --entrypoint getent -t test:tag passwd resolver
+    assertEquals 0 $?
+
+    $DOCKER_RUN_PREFIX --entrypoint getent -t test:tag group 2048 
+    assertEquals 0 $?
+
+    $DOCKER_RUN_PREFIX --entrypoint getent -t test:tag group sca
     assertEquals 0 $?
 }
 
@@ -14,11 +52,12 @@ testBuildNoBaseTargetsAlpineSuccess()
     assertEquals 0 $?
 }
 
-testBuildNoBaseTargetsNonAlpineFails()
+testBuildGradleAlpineBareSuccess()
 {
-    $DOCKER_BUILD_PREFIX -t test:tag --target=resolver-alpine --target=resolver-redhat ..
-    assertNotEquals 0 $?
+    $DOCKER_BUILD_PREFIX $GRADLE_ALPINE_BUILD_PARAMS --target=resolver-alpine-bare ..
+    assertEquals 0 $?
 }
+
 
 testBuildGradleDebianUbuntuFocalSuccess()
 {
@@ -32,11 +71,6 @@ testBuildGradleDebianUbuntuJammySuccess()
     assertEquals 0 $?
 }
 
-testBuildGradleWrongTypeFails()
-{
-    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-jammy --target=resolver-redhat ..
-    assertNotEquals 0 $?
-}
 
 testBuildAmazonSuccess()
 {

@@ -10,7 +10,7 @@ fi
 INPUT_DIR=$(pwd)/input
 OUTPUT_DIR=$(pwd)/output
 
-DOCKER_BUILD_PREFIX="docker build"
+DOCKER_BUILD_PREFIX="docker build --progress plain"
 DOCKER_RUN_PREFIX="docker run --rm -v $INPUT_DIR:/sandbox/input -v $OUTPUT_DIR:/sandbox/output -v $OUTPUT_DIR:/sandbox/scalogs"
 
 set +e

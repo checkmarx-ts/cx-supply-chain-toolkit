@@ -68,13 +68,21 @@ USER root
 COPY --from=extracted-musl /sandbox/resolver/* /sandbox/resolver/
 COPY --from=cxone-extracted-linux /sandbox/cxonecli/* /sandbox/cxonecli/
 
+
 RUN apk add -q libstdc++ bash && \
     [[ "$(getent group ${GROUP_ID})" = "" ]] && { addgroup -g ${GROUP_ID} sca ; TARGET_GROUP=sca ; } || TARGET_GROUP=$(getent group ${GROUP_ID} | cut -d ':' -f1) && \
     addgroup root $TARGET_GROUP && \
     [[ "$(getent passwd ${USER_ID})" = "" ]] && {  adduser -u ${USER_ID} -D -s /sbin/nologin -G $TARGET_GROUP resolver ; TARGET_NAME=resolver ; } || TARGET_NAME=$(getent passwd ${USER_ID} | cut -d ':' -f1) && \
     for cert in $(ls /cacerts); do cat /cacerts/$cert >> /etc/ssl/certs/ca-certificates.crt; done && \
     echo IMAGE BUILD UID:GID: $TARGET_NAME:$TARGET_GROUP as $USER_ID:$GROUP_ID && \
-    chown -R root:$TARGET_GROUP /sandbox
+    chown -R root:$TARGET_GROUP /sandbox && \
+    HOME_DIR=$(getent passwd ${USER_ID} | cut -d: -f6) && \
+    mkdir $HOME_DIR/.checkmarx && \
+    chown -R $TARGET_NAME:$TARGET_GROUP $HOME_DIR/.checkmarx
+
+RUN ln -s $(which bash) /bin/bsh
+
+SHELL ["/bin/bsh", "-c"]
 
 FROM resolver-alpine-bare AS resolver-alpine
 ARG GROUP_ID=1000
@@ -94,10 +102,10 @@ COPY --from=cxone-extracted-linux /sandbox/cxonecli/* /sandbox/cxonecli/
 
 RUN apt-get update && \
     apt-get install -y ca-certificates && \
-    ln -s $(which bash) /usr/bin/bsh && \
+    ln -s $(which bash) /bin/bsh && \
     apt-get clean
 
-SHELL ["/usr/bin/bsh", "-c"]
+SHELL ["/bin/bsh", "-c"]
 
 RUN \
     [[ "$(getent group ${GROUP_ID})" = "" ]] && { addgroup --gid ${GROUP_ID} sca ; TARGET_GROUP=sca ; } || TARGET_GROUP=$(getent group ${GROUP_ID} | cut -d ':' -f1) && \
@@ -106,7 +114,10 @@ RUN \
     chmod -R 750 /sandbox/resolver && \
     for cert in $(ls /cacerts); do cat /cacerts/$cert >> /etc/ssl/certs/ca-certificates.crt; done && \
     echo IMAGE BUILD UID:GID: $TARGET_NAME:$TARGET_GROUP as $USER_ID:$GROUP_ID && \
-    chown -R root:$TARGET_GROUP /sandbox
+    chown -R root:$TARGET_GROUP /sandbox && \
+    HOME_DIR=$(getent passwd ${USER_ID} | cut -d: -f6) && \
+    mkdir $HOME_DIR/.checkmarx && \
+    chown -R $TARGET_NAME:$TARGET_GROUP $HOME_DIR/.checkmarx
 
 
 FROM resolver-debian-bare AS resolver-debian
@@ -127,16 +138,23 @@ USER root
 COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
 COPY --from=cxone-extracted-linux /sandbox/cxonecli/* /sandbox/cxonecli/
 
+RUN [[ $(command -v microdnf) != "" ]] && { microdnf install -y --nodocs shadow-utils which ; microdnf clean all ; } || : && \
+    ln -s $(which bash) /bin/bsh
+
+SHELL ["/bin/bsh", "-c"]
+
 RUN \
-    [[ $(command -v microdnf) != "" ]] && { microdnf install -y --nodocs shadow-utils which ; microdnf clean all ; } || : && \
     [[ "$(getent group ${GROUP_ID})" = "" ]] && { groupadd --gid ${GROUP_ID} sca ; TARGET_GROUP=sca ; } || TARGET_GROUP=$(getent group ${GROUP_ID} | cut -d ':' -f1) && \
-    [[ "$(getent passwd ${USER_ID})" = "" ]] && { adduser -G $TARGET_GROUP resolver ; TARGET_NAME=resolver; } || TARGET_NAME=$(getent passwd ${USER_ID} | cut -d ':' -f1) && \
+    [[ "$(getent passwd ${USER_ID})" = "" ]] && { adduser -u ${USER_ID} -G $TARGET_GROUP -s /sbin/nologin resolver ; TARGET_NAME=resolver; } || TARGET_NAME=$(getent passwd ${USER_ID} | cut -d ':' -f1) && \
     usermod -a -G $TARGET_GROUP root && \
     chmod -R 750 /sandbox/resolver && \
     cp /cacerts/* /etc/pki/ca-trust/source/anchors/ && \
     update-ca-trust extract && \
     echo IMAGE BUILD UID:GID: $TARGET_NAME:$TARGET_GROUP as $USER_ID:$GROUP_ID && \
-    chown -R root:$TARGET_GROUP /sandbox
+    chown -R root:$TARGET_GROUP /sandbox && \
+    HOME_DIR=$(getent passwd ${USER_ID} | cut -d: -f6) && \
+    mkdir $HOME_DIR/.checkmarx && \
+    chown -R $TARGET_NAME:$TARGET_GROUP $HOME_DIR/.checkmarx
 
 
 FROM resolver-redhat-bare AS resolver-redhat
@@ -155,17 +173,28 @@ USER root
 COPY --from=extracted-linux /sandbox/resolver/* /sandbox/resolver/
 COPY --from=cxone-extracted-linux /sandbox/cxonecli/* /sandbox/cxonecli/
 
-RUN yum install -y shadow-utils which && \
+RUN yum install -y shadow-utils which ca-certificates && \
     yum clean all && \
-    rm -rf /var/cache/yum && \
-    groupadd --gid ${GROUP_ID} sca && \
+    rm -rf /var/cache/yum
+
+RUN ln -s $(which bash) /bin/bsh
+
+SHELL ["/bin/bsh", "-c"]
+
+RUN groupadd --gid ${GROUP_ID} sca && \
     adduser -G sca resolver && \
     usermod -G sca root && \
-    chmod -R 750 /sandbox/resolver && \
+    HOME_DIR=$(getent passwd ${USER_ID} | cut -d: -f6) && \
+    mkdir -p $HOME_DIR/.checkmarx &&  \
+    chown -R $TARGET_NAME:$TARGET_GROUP $HOME_DIR/.checkmarx && \
+    chown -R resolver:sca $HOME_DIR/.checkmarx
+
+RUN chmod -R 750 /sandbox/resolver && \
     cp /cacerts/* /etc/pki/ca-trust/source/anchors/ && \
     update-ca-trust extract && \
     echo IMAGE BUILD UID:GID: $TARGET_NAME:$TARGET_GROUP as $USER_ID:$GROUP_ID && \
     chown -R root:sca /sandbox
+
 
 FROM resolver-amazon-bare AS resolver-amazon
 ARG GROUP_ID=1000
