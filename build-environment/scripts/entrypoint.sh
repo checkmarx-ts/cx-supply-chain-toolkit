@@ -23,27 +23,17 @@ if [[ $# -ne 0 ]]; then
         ;;
 
         sca)
-            # Do nothing
+            shift
         ;;
 
         *)
-            echo The option \'$1\' is unknown.
-            exit 1
         ;;
-
     esac
 fi
 
 
 if [[ $SKIP_SCA -eq 0 ]]; then
-    if [[ $# -eq 0 ]] || [[ $# -gt 0 && "sca" == $1 ]]; then
+    EXTRA=$($(which bash) -c "[[ $# -eq 0 ]] && echo \"-h\" || echo -c /sandbox/resolver/Configuration.yml")
 
-        if [[ $# -gt 0 ]]; then
-            [[ "sca" == $1 ]] && shift || :
-        fi
-
-        EXTRA=$($(which bash) -c "[[ $# -eq 0 ]] && echo \"-h\" || echo -c /sandbox/resolver/Configuration.yml")
-
-        /sandbox/resolver/ScaResolver $@ $EXTRA
-    fi
+    /sandbox/resolver/ScaResolver $@ $EXTRA
 fi

@@ -126,9 +126,6 @@ ARG USER_ID=1000
 USER  ${USER_ID}:${GROUP_ID}
 ENTRYPOINT ["/entrypoint.sh"]
 
-
-
-
 ##########################################################################
 FROM base-config AS resolver-redhat-bare
 ARG GROUP_ID=1000
