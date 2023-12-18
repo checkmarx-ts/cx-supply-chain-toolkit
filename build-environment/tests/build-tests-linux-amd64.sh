@@ -2,13 +2,6 @@
 
 . ./common
 
-setUp()
-{
-    docker image ls test:tag && : || return
-    
-    docker image rm test:tag
-    docker system prune -f
-}
 
 tearDown()
 {
