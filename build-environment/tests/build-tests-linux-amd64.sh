@@ -5,8 +5,6 @@
 
 tearDown()
 {
-    docker image ls test:tag && : || return
-
     $DOCKER_RUN_PREFIX --entrypoint test -t test:tag -f /sandbox/resolver/ScaResolver 
     assertEquals 0 $?
 

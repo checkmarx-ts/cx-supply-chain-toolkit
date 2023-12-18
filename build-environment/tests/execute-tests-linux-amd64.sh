@@ -20,7 +20,7 @@ tearDown()
 
 oneTimeSetUp() {
     git clone https://github.com/checkmarx-ltd/cx-flow.git $(pwd)/cxflow
-    $DOCKER_BUILD_PREFIX $BUILD_COMPAT -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
+    $DOCKER_BUILD_PREFIX -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
 }
 
 oneTimeTearDown() {
