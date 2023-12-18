@@ -17,7 +17,7 @@ view.  Scans are typically invoked using the \cxonecli where the type of scan to
 of the CLI execution parameters.  By default, the \cxonecli will use the 
 \hyperref[sssec:remote_environment]{\textit{Remote Execution Environment}} to perform the supply-chain
 vulnerability scan.  The \cxonecli can be given a path to the \scaresolver executable to allow
-the supply-chain vulnerability scan to execute in your customized build environment.  The \cxonecli the uploads
+the supply-chain vulnerability scan to execute in your customized build environment.  The \cxonecli then uploads
 the results to \cxone for final analysis that reports any potentially vulnerable packages.
 
 
@@ -81,7 +81,7 @@ environments.  This has several advantages:
 
 \subsection{Creating Extended Images}
 
-The build-environment components contains a \texttt{Dockerfile} is multi-stage where stage names
+The build-environment components contains a multi-stage \texttt{Dockerfile} where stage names
 specify the correct variation of Linux\footnote{There is currently no support for Windows base images.}
 in the base image.  The stage names are intended to align 
 with popular base images used to create build environments.  The \texttt{Dockerfile} stages
@@ -229,15 +229,15 @@ while minimizing the risk of detonating malware payloads found in untrusted buil
 package installation scripts. This is not universally a problem with all dependencies, but 
 there is always the possibility for malware delivery via open-source packages. 
 
-\noindent\\In terms of sandboxing, the extended images with entrypoints perform the following sandboxing
+\noindent\\In terms of sandboxing, the extended images with entrypoints performs the following sandboxing
 activities:
 
 \begin{itemize}
     \item The local user executing the scan has limited privileges.
     \item Code for scanning is provided in a read-only volume map.
     This blocks dependencies that execute code-modifying malware from mutating scanned code.
-    \item Output volume maps are write-only, preventing the vulnerability reports and logs
-    from being exfiltrated as part of exploitable vulnerability intelligence gathering activities.
+    \item Output volume maps are write-only, making exfiltration of the vulnerability reports and logs
+    difficult to perform inside the extended container.
 \end{itemize}
 
 \noindent\\Nothing is foolproof; don't expect that using this container alone hardens your build
@@ -294,7 +294,7 @@ Extended images with entrypoints can be invoked to use \scaresolver the same way
 it would be invoked from the command line with a local install.  Any of the 
 \scaresolver
 \href{https://checkmarx.com/resource/documents/en/34965-132888-checkmarx-sca-resolver-configuration-arguments.html}{command line arguments}
-are passed to the container.  A typical execution is shown below:
+are passed to the container.  A typical execution is shown in the below listing:
 
 
 \begin{code}{Extended Container Typical CLI Invocation}{[SCA Resolver]}{}
@@ -335,5 +335,5 @@ execution is shown below:\\
         <other CxOne CLI args...>
 \end{code}
 
-Note that the \texttt{--sca-resolver} parameter is the container local path where the \scaresolver
-executable can be found.
+Note that the \texttt{----sca-resolver} parameter is the container local path where the \scaresolver
+executable is installed during the extended container build.
