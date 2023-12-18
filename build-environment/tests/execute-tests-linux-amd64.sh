@@ -156,7 +156,7 @@ testCxOneScan () {
             --sca-resolver /sandbox/resolver/ScaResolver \
             --scan-types sast,sca \
             --report-format json \
-            --output-name results.json \
+            --output-name .cxsca-results.json \
             --branch master \
             --apikey $TEST_APIKEY > /dev/null 2>&1
 
@@ -167,5 +167,41 @@ testCxOneScan () {
     
     [[ isSkipping -eq "${SHUNIT_TRUE}" ]] && endSkipping
 }
+
+testCxOneOfflineScaScan () {
+    
+    if isMissingCxOneVars
+    then
+        startSkipping
+        reportMissingCxOneVars "${FUNCNAME[0]}"
+    else
+        cp -r $(pwd)/cxflow/* $INPUT_DIR
+
+        $DOCKER_RUN_PREFIX test \
+            offline \
+            -s /sandbox/input \
+            -n $PROJECT_DEFAULT_NAME \
+            -r /sandbox/output/.cxsca-results.json > /dev/null 2>&1
+
+        rm -rf $INPUT_DIR
+
+        mv $OUTPUT_DIR $INPUT_DIR
+
+        $DOCKER_RUN_PREFIX test cxone \
+            scan create \
+            -s /sandbox/input \
+            --project-name $PROJECT_DEFAULT_NAME \
+            --scan-types sca \
+            --branch master \
+            --apikey $TEST_APIKEY > /dev/null 2>&1
+
+    fi
+
+    assertTrue 0 $?
+    
+    [[ isSkipping -eq "${SHUNIT_TRUE}" ]] && endSkipping
+}
+
+
 
 . ./shunit2-2.1.8/shunit2

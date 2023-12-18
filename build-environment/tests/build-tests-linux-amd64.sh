@@ -150,5 +150,41 @@ testUbuntuSuccess()
 }
 
 
+testNoCreatingDirRedhat1()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=redhat/ubi8:latest --target=resolver-redhat ..
+    docker run --rm -it test:tag cxone | grep -i "creating directory"
+    assertNotEquals 0 $?
+}
+
+testNoCreatingDirRedhat2()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=redhat/ubi8-minimal:latest --target=resolver-redhat ..
+    docker run --rm -it test:tag cxone | grep -i "creating directory"
+    assertNotEquals 0 $?
+}
+
+testNoCreatingDirDebian()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=ubuntu:latest --target=resolver-debian ..
+    docker run --rm -it test:tag cxone | grep -i "creating directory"
+    assertNotEquals 0 $?
+}
+
+testNoCreatingDirAlpine()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=amazoncorretto:11-alpine3.14 --target=resolver-alpine ..
+    docker run --rm -it test:tag cxone | grep -i "creating directory"
+    assertNotEquals 0 $?
+}
+
+testNoCreatingDirAmazon()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=amazoncorretto:8 --target=resolver-amazon ..
+    docker run --rm -it test:tag cxone | grep -i "creating directory"
+    assertNotEquals 0 $?
+}
+
+
 . ./shunit2-2.1.8/shunit2
 
