@@ -1,24 +1,38 @@
 \chapter{Integrating \scaresolver into Build Environments}\label{chap:ext_build_env}
 
+If you've determined that your dependency resolution scanning does not execute properly
+in a \hyperref[sssec:remote_environment]{\textit{Remote Execution Environment}}, \scaresolver
+is the solution for executing the dependency resolution in an environment you have defined.
 The Checkmarx \scaresolver is the scan command line tool that invokes 
 dependency scans locally.  It can be invoked directly or as part of another
-tool such as \cxflow, the \cxonecli, or other Checkmarx plugins.  
+tool such as \cxflow, the \cxonecli, or other Checkmarx plugins.
 
-\noindent\\
-\textit{
-    Please note: While some of these techniques can be applied for 
-    integration with \cxone supply chain scans, this document is
-    currently focused on solutions using \cxsca.  Future versions will cover
-    more \cxone supply chain scan integration topics.
-}
+\cxsca is a standalone product that provides a portal that manages supply chain vulnerability scans.  This is
+typically used in combination with the \cxsast product to provide both static analysis and supply-chain vulnerability
+scans.  \scaresolver can communicate directly with \cxsca to upload data from the locally executed supply-chain
+scan, which would have presumably executed in your customized build environment.
+
+\cxone is a product that combines multiple scan types, including supply-chain vulnerability scans, into a single
+view.  Scans are typically invoked using the \cxonecli where the type of scan to invoke is defined as part
+of the CLI execution parameters.  By default, the \cxonecli will use the 
+\hyperref[sssec:remote_environment]{\textit{Remote Execution Environment}} to perform the supply-chain
+vulnerability scan.  The \cxonecli can be given a path to the \scaresolver executable to allow
+the supply-chain vulnerability scan to execute in your customized build environment.  The \cxonecli the uploads
+the results to \cxone for final analysis that reports any potentially vulnerable packages.
+
+
+\noindent\\This section documents methods for integrating the execution of \scaresolver into your
+build environment.
+
 
 \section{Deploying on a Build Agent}
 
 When builds are executed on a specific build agent (a.k.a. "The Build Box"),
 the invocation of \scaresolver will typically be scripted to execute
-withing a pipeline stage.  In this scenario, the \scaresolver should be
+within a pipeline stage.  In this scenario, the \scaresolver should be
 installed on all build agents that will run pipelines that have scripted
-a supply chain scan invocation.
+a supply chain scan invocation.  This is the most simple scenario and applies
+when using \scaresolver with \cxsca or \cxone.
 
 Note that in this scenario, updates to \scaresolver will need to be
 periodically installed.  There are likely several tools on the build agent
@@ -57,7 +71,7 @@ environments.  This has several advantages:
     \item Deployment of updates is a simple rebuild of the extended containers.
     \item The \cxtoolkit provides a way to generate the extended build 
     environment image for build images running on popular Linux distributions.
-    \item The image in the \cxtoolkit also provides some isolation of 
+    \item The image created with the \cxtoolkit also provides some isolation of 
     dependency resolution activities to avoid some attacks associated with 
     malware embedded in typo-squatted packages.
 \end{itemize}
@@ -82,14 +96,42 @@ command:
 
 \noindent\\\\\texttt{docker run ----rm -it ----entrypoint=cat <base image tag> /etc/os-release}
 
+
+\noindent\\As an example, determining the Linux variation for the \texttt{gradle:latest} image can
+be performed with the following command:
+
+\noindent\\\\\texttt{docker run --rm -it --entrypoint=cat gradle:latest /etc/os-release}
+
+\noindent\\The output of \texttt{/etc/os-release} reveals that the Linux variation is Ubuntu, which is a derivative
+of Debian.\\\\
+
+\begin{code}{Output of "cat /etc/os-release" from gradle:latest}{}{}
+PRETTY_NAME="Ubuntu 22.04.3 LTS"
+NAME="Ubuntu"
+VERSION_ID="22.04"
+VERSION="22.04.3 LTS (Jammy Jellyfish)"
+VERSION_CODENAME=jammy
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=jammy
+\end{code}
+
+
+
 \subsection{How to Build an Extended Image}
 
-Building the extended image is done via a \texttt{docker build} command.
-\footnote{These instructions can likely be adapted to other container build tools.  Docker is used here since it is
-the most commonly used container toolkit at the time this manual was written.}
+Building the extended image is done via a \texttt{docker build}\footnote{These instructions can likely be adapted to other container build tools.  Docker is used here since it is
+the most commonly used container toolkit at the time this manual was written.} command
+using the \texttt{Dockerfile} provided in the \cxtoolkit build-environment.
 Docker \href{https://docs.docker.com/build/guide/build-args/}{build arguments} control how the extended image build
 is performed.  The most important argument is the \hyperref[sec:BASE]{\textbf{BASE}} build argument.  Other build
 arguments are available; details of the available arguments can be found in Appendix \ref{chap:build_args}.
+
+
 
 \noindent\\Example build commands:
 
@@ -162,14 +204,13 @@ image with an entry point are:
 
 \subsection{Bare Dockerfile Targets}\label{ssec:bare_targets}
 
-Containers built with these targets have no entrypoint and run as root.  
-CI/CD pipelines will sometimes need the ability to execute environment
+Containers built with bare targets have no entrypoint and run as root.  
+Some CI/CD pipelines will need the ability to execute environment
 configuraton commands as root before the stage is executed.  Some CI/CD pipelines
 will allow the entrypoint to be overridden and will successfully execute the stage
-in the container image.  Some CI/CD pipelines, like Azure Devops, are not compatible
-with images that define an entrypoint.  
-
-If your CI/CD pipeline needs a container image without an entrypoint, these targets will
+in the container image.  The Azure Devops pipeline, for example, is not compatible
+with images that define an entrypoint.  If your CI/CD pipeline needs a container image without 
+an entrypoint, these targets will
 produce extended images without an entrypoint:
 
 \begin{itemize}
@@ -180,16 +221,15 @@ produce extended images without an entrypoint:
 \end{itemize}
 
 
-\subsection{Sandboxed Entrypoint Containers}
+\section{Extended Containers and Execution Sandboxing}
 
 Building extended images with entrypoint targets will "sandbox" \scaresolver execution 
 to the extent possible. This is to allow \scaresolver to execute a dependency resolution
 while minimizing the risk of detonating malware payloads found in untrusted build scripts or 
 package installation scripts. This is not universally a problem with all dependencies, but 
-there is always the possibility for malware delivery via dependencies.  If there was not, 
-no one would be performing supply-chain security scans.
+there is always the possibility for malware delivery via open-source packages. 
 
-In terms of sandboxing, the extended images with entrypoints perform the following sandboxing
+\noindent\\In terms of sandboxing, the extended images with entrypoints perform the following sandboxing
 activities:
 
 \begin{itemize}
@@ -200,35 +240,34 @@ activities:
     from being exfiltrated as part of exploitable vulnerability intelligence gathering activities.
 \end{itemize}
 
-Nothing is foolproof; don't expect that using this container alone hardens your build
+\noindent\\Nothing is foolproof; don't expect that using this container alone hardens your build
 environment.  A threat modeling exercise should be undertaken to understand
 if there are other infrastructure changes needed to properly control what is executed in your
 build environments.
 
-\subsection{Invoking the Sandbox Container CLI Style}
+\subsection{Invoking the Sandbox Container CLI Style}\label{ssec:invoking_cli}
 
-Extended images with entrypoints can be invoked to use \scaresolver the same way
-it would be invoked from the command line with a local install.  Any of the 
-\scaresolver
-\href{https://checkmarx.com/resource/documents/en/34965-132888-checkmarx-sca-resolver-configuration-arguments.html}{command line arguments}
-are passed to the container.  A typical execution is shown below:
+The extended container can invoke \scaresolver or \cxonecli in the same way each CLI tool would be
+invoked locally.  Since the container is not executing locally, the code artifacts under scan
+need to be mapped to paths inside the container.  Table \ref{table:volume_maps} shows the
+container paths where it is appropriate to map volumes during container execution.  
 
+While it is possible
+to define your own local container paths for mapping, the paths in Table \ref{table:volume_maps}
+have been configured with the container's execution user's permissions set to limit the ability to
+interact with the paths as appropriate for the path's purpose.  The \texttt{/sandbox/input} path,
+for example, is read-only to prevent modification of the code under scan.
 
-\begin{code}{Extended Container Typical CLI Invocation}{}{}
-docker run --rm -it \
-    -v /my-log-path:/sandbox/scalogs \
-    -v .:/sandbox/input \
-    -v ./sca-results:/sandbox/output \
-    my-scaresolver-tag <SCAResolver args...>
-\end{code}
+Extended containers with no entrypoint (e.g. the "bare" targets) have the same permissions set
+as would be used by extended containers with an entrypoint.  The no-entrypoint targets, however, run
+as \texttt{root} which makes the permissions irrelevant.  It is possible to execute the CLI tool as
+the sandbox user if desired.  Refer to Appendix \ref{chap:build_args} to see how to detect the user id
+of the sandbox user.
 
-To properly interface with the container, some directories are intended to be mapped 
-to a volume at runtime.  Table \ref{table:volume_maps} shows the available volume map
-paths.
 
 
 \begin{table}[h]
-    \caption{Container Volume Maping Paths}\label{table:volume_maps}      
+    \caption{Container Volume Mapping Paths}\label{table:volume_maps}      
     \begin{tabularx}{\textwidth}{lcl}
         \toprule
         \textbf{Container Directory} & \textbf{Required} & \textbf{Description}\\
@@ -247,7 +286,54 @@ paths.
     \end{tabularx}
 \end{table}
 
-Note that options passed to \scaresolver that indicate where to place output should be provided 
-with paths prefixed with \texttt{/sandbox}.  This is the location in the container where you 
-have mapped a volume in the \texttt{docker run} command.
 
+
+\subsubsection{Invoking SCA Resolver}
+
+Extended images with entrypoints can be invoked to use \scaresolver the same way
+it would be invoked from the command line with a local install.  Any of the 
+\scaresolver
+\href{https://checkmarx.com/resource/documents/en/34965-132888-checkmarx-sca-resolver-configuration-arguments.html}{command line arguments}
+are passed to the container.  A typical execution is shown below:
+
+
+\begin{code}{Extended Container Typical CLI Invocation}{[SCA Resolver]}{}
+docker run --rm -it \
+    -v /my-log-path:/sandbox/scalogs \
+    -v .:/sandbox/input \
+    -v ./sca-results:/sandbox/output \
+    my-container-tag \
+    --logs-path /sandbox/scalogs \
+    --resolver-result-path /sandbox/output \
+    --scan-path /sandbox/input \ 
+    <other SCAResolver args...>
+\end{code}
+
+Note that options passed to \scaresolver that indicate where to place output should be provided 
+with paths prefixed with \texttt{/sandbox} corresponding to the local container paths in 
+Table \ref{table:volume_maps}.
+
+\subsubsection{Invoking CxOne CLI with SCA Resolver}
+
+Invoking \scaresolver as a CLI with the extended container is performed by default with the entrypoint
+of the extended container.  Using \texttt{cxone} as the first parameter to the extended container will
+execute the \cxonecli as if it were invoked from the command line with a local install. A typical
+execution is shown below:\\
+
+
+\begin{code}{Extended Container Typical CLI Invocation}{[CxOne CLI with SCA Resolver]}{}
+    docker run --rm -it \
+        -v /my-log-path:/sandbox/scalogs \
+        -v .:/sandbox/input \
+        -v ./sca-results:/sandbox/output \
+        my-container-tag \
+        cxone \
+        scan create \
+        --output-path /sandbox/output \
+        --sca-resolver /sandbox/resolver/ScaResolver \
+        -s /sandbox/input \
+        <other CxOne CLI args...>
+\end{code}
+
+Note that the \texttt{--sca-resolver} parameter is the container local path where the \scaresolver
+executable can be found.

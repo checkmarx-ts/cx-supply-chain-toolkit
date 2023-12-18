@@ -1,14 +1,27 @@
 \chapter{Executing Supply Chain Scans in a Pipeline}
 
 
-\section{Supply Chain Scans with \cxone}
+\section{On-Demand-Install Execution Method}
 
-This document does not currently cover integration topics for integrating
-\scaresolver invoked in a pipeline with \cxone.  This will be covered in 
-future releases.
+Using this method, all required CLI components are downloaded and executed at the time
+the pipeline is executed.  Some advantages of this method:
 
 
-\section{\scaresolver On-Demand-Install Execution Method}
+\begin{itemize}
+    \item It always gets the latest version of CLI tools.
+    \item There is no additional configuration artifacts needed to be able to
+    perform a supply chain vulnerability scans.
+\end{itemize}
+
+\noindent\\Some disadvantages of this method:
+\begin{itemize}
+    \item The endpoint for the download may be unreachable, thus causing the build to fail.
+    \item The steps to perform the download and install may need to be repeated
+    in many different pipeline definitions.
+\end{itemize}
+
+
+\subsection{SCA Standalone}
 
 This method invokes the \scaresolver in the pipeline script by following this
 basic pattern:
@@ -21,22 +34,23 @@ basic pattern:
     to the code that is the target of the scan.
 \end{enumerate}
 
-Some advantages of this method:
 
-\begin{itemize}
-    \item It always gets the latest version of \scaresolver.
-    \item There is no additional configuration artifacts needed to be able to
-    perform a supply chain vulnerability scan.
-\end{itemize}
+\subsection{Checkmarx One}
 
+This method invokes the \scaresolver via invocation of the \cxonecli in the pipeline script by 
+following this basic pattern:
 
-
-Some disadvantages of this method:
-\begin{itemize}
-    \item The endpoint for the download may be unreachable, thus causing the build to fail.
-    \item The steps to perform the download and install may need to be repeated
-    in many different pipeline definitions.
-\end{itemize}
+\begin{enumerate}
+    \item Download the \cxonecli from the Checkmarx website or
+    an internal storage endpoint.
+    \item Download the \scaresolver from the Checkmarx website or
+    an internal storage endpoint.
+    \item Extract \cxonecli from the distribution tarball.
+    \item Extract \scaresolver from the distribution tarball.
+    \item Execute \cxonecli with command line parameters relevant to
+    to the code that is the target of the scan.  One parameter will include
+    the path to \scaresolver.
+\end{enumerate}
 
 
 
@@ -44,11 +58,12 @@ Some disadvantages of this method:
 
 Many CI/CD pipeline tools allow stages to define container images used for
 executing a pipeline stage.  Using techniques discussed in
-Section \ref{sec:extending_environment}, a container with \scaresolver
-configured for execution can be used to execute a pipeline stage.  The
-CI/CD pipeline tool may use a container with an 
+Section \ref{sec:extending_environment}, a container with \cxonecli and \scaresolver
+can be executed in a pipeline stage. The CI/CD pipeline tool may use a container with an 
 \hyperref[ssec:entrypoint_targets]{Entrypoint} or one that
 is used by the \hyperref[ssec:bare_targets]{Bare} container build targets.
+
+\subsection{Azure DevOps Examples}
 
 The \hyperref[listing:ado_pipeline2]{Azure Devops Pipeline Example} below 
 shows a pipeline stage executing \scaresolver in a containerized environment.
@@ -56,10 +71,10 @@ In the case of Azure DevOps, containers
 \href{https://learn.microsoft.com/en-us/azure/devops/pipelines/process/container-phases?view=azure-devops#requirements}{are required to not define an entrypoint.}
 By building a container extending an existing containerized build
 environment with a \hyperref[ssec:bare_targets]{Bare} build target, Azure DevOps
-pipeline scripts execute inside the container as demonstrated in the listing.
+pipeline scripts execute inside the container as demonstrated in the listing below:\\
 
 \label{listing:ado_pipeline2}
-\begin{code}{Azure Devops Pipeline Example}{}{}
+\begin{code}{Azure Devops Pipeline Example}{[SCA Resolver]}{}
 trigger:
     - master
 
@@ -76,4 +91,83 @@ jobs:
 
         steps:
             - script: /sandbox/resolver/ScaResolver -h
+\end{code}
+
+Note that since the execution is occurring inside the
+\texttt{cxnleach/scaresolver-general-build-ado:latest} container, the path to \scaresolver
+is local to the container image.  The listing below shows a scan executing with the \cxonecli
+also in Azure DevOps:\\
+
+
+\label{listing:ado_pipeline_cxone}
+\begin{code}{Azure Devops Pipeline Example}{[CxOne CLI]}{}
+trigger:
+    - master
+
+pool:
+    vmImage: ubuntu-latest
+
+jobs:
+    - job: SCAResolver
+        pool:
+            vmImage: ubuntu-latest
+
+        container: 
+            image: cxnleach/scaresolver-general-build-ado:latest
+
+        steps:
+            - script: /sandbox/cxonecli/cx -h
+\end{code}
+
+
+\subsection{GitHub Actions Samples}
+
+GitHub actions can use extended containers with \hyperref[ssec:entrypoint_targets]{entrypoints} but
+will require the user to have a UID of 1001 and a group id of 127.  The listing below shows 
+an example of how to build an extended container while setting the UID/GID as described
+in Appendix \ref{chap:build_args}:\\
+
+\begin{code}{GitHub Extended Container Build Example}{}{}
+docker build -t your_tag_here \
+    --build-arg BASE=gradle:8-jdk11-alpine \
+    --target=resolver-alpine \
+    --build-arg USER_ID=1001 \
+    --build-arg GROUP_ID=127 \
+    -f Dockerfile .    
+\end{code}
+
+
+Execution as a step in the GitHub action yaml would be invoked as described in 
+Section \ref{ssec:invoking_cli}, such as is demonstrated by the basic shell invocation pipeline
+example shown below:\\
+
+\begin{code}{Invoking the Container in a GitHub Action}{}{}
+name: Checkmarx Scan
+
+on:
+    push:
+        branches: [ $default-branch ]
+    pull_request:
+        branches: [ $default-branch ]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+    steps:
+        - uses: actions/checkout@v3
+        - name: Execute a Checkmarx One Scan
+            run: |
+                docker run --rm -it \
+                -v /my-log-path:/sandbox/scalogs \
+                -v .:/sandbox/input \
+                -v ./sca-results:/sandbox/output \
+                my-container-tag \
+                cxone \
+                scan create \
+                --output-path /sandbox/output \
+                --sca-resolver /sandbox/resolver/ScaResolver \
+                -s /sandbox/input \
+                <other CxOne CLI args...>            
+    
 \end{code}
