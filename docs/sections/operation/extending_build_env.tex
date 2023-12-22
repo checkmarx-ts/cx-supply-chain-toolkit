@@ -287,6 +287,26 @@ of the sandbox user.
 \end{table}
 
 
+\subsubsection{Code Write Isolation}
+
+It is important to note that by default, the build environment copies the 
+code under scan from the mapped input path (refer to Table \ref{table:volume_maps}) to the
+container path \texttt{/sandbox/input\_sandbox}.  In the execution examples,
+you can note that the code input is mapped to \texttt{/sandbox/input} but
+the parameters for input to the CLI are \texttt{/sandbox/input\_sandbox}.
+
+The purpose for this is that some build tools that require the source directory
+to be writable to properly resolve dependencies.  In some cases, the act
+of resolving dependencies can invoke code authored by package or project 
+maintainers.  The package code can contain malware that could modify the
+source mapped to the input path \texttt{/sandbox/input}.  The build environment
+container prevents this by making \texttt{/sandbox/input} read-only for the
+user executing the dependency resolution.  At startup, the entrypoint containers
+copy the contents of \texttt{/sandbox/input} to \texttt{/sandbox/input\_sandbox}
+to prevent modification of the input code.  Anything written to
+\texttt{/sandbox/input\_sandbox} is discarded when the container terminates.
+
+
 
 \subsubsection{Invoking SCA Resolver}
 
@@ -305,7 +325,7 @@ docker run --rm -it \
     my-container-tag \
     --logs-path /sandbox/scalogs \
     --resolver-result-path /sandbox/output \
-    --scan-path /sandbox/input \ 
+    --scan-path /sandbox/input_sandbox \ 
     <other SCAResolver args...>
 \end{code}
 
@@ -325,13 +345,13 @@ execution is shown below:\\
     docker run --rm -it \
         -v /my-log-path:/sandbox/scalogs \
         -v .:/sandbox/input \
-        -v ./sca-results:/sandbox/output \
+        -v ./cxone-results:/sandbox/output \
         my-container-tag \
         cxone \
         scan create \
         --output-path /sandbox/output \
         --sca-resolver /sandbox/resolver/ScaResolver \
-        -s /sandbox/input \
+        -s /sandbox/input_sandbox \
         <other CxOne CLI args...>
 \end{code}
 
