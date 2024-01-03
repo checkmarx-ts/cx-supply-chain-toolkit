@@ -168,8 +168,8 @@ jobs:
       
       - name: Rename documentation artifacts
         run: |
-          mv manual.pdf cx-supply-chain-toolkit-manual-${{ inputs.tag }}.pdf
-          mv release-notes.pdf cx-supply-chain-toolkit-release-notes-${{ inputs.tag }}.pdf
+          mv _main.pdf cx-supply-chain-toolkit-manual-${{ inputs.tag }}.pdf
+          mv release_notes.pdf cx-supply-chain-toolkit-release-notes-${{ inputs.tag }}.pdf
         
       - name: Create GitHub Release
         id: create_release
