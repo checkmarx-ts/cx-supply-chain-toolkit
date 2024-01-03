@@ -123,8 +123,15 @@ jobs:
 \subsection{GitHub Actions Samples}
 
 GitHub actions can use extended containers with \hyperref[ssec:entrypoint_targets]{entrypoints} but
-will require the user to have a UID of 1001 and a group id of 127.  The listing below shows 
-an example of how to build an extended container while setting the UID/GID as described
+will require the user to have a UID and GID that match the GitHub runner's UID
+primary GID.  The values for UID/GID may not be the same on a GitHub-hosted
+runner and a self-hosted runner.  The GitHub-hosted runner UID is 1001 and
+the primary GID is 127 as of the time this manual was generated. Please
+refer to Appendix \ref{chap:gh_action_build_args} for more information
+about determining the correct UID/GID.
+
+
+The listing below shows an example of how to build an extended container while setting the UID/GID as described
 in Appendix \ref{chap:build_args}:\\
 
 \begin{code}{GitHub Extended Container Build Example}{}{}
