@@ -1,4 +1,6 @@
 FROM amazoncorretto:11-al2023-jdk
+LABEL org.opencontainers.image.source https://github.com/checkmarx-ts/cx-supply-chain-toolkit
+
 
 ENV JAVA_OPTS="-Xms512m -Xmx2048m"
 ENV JAVA_PROPS="-Djava.security.egd=file:/dev/./urandom"

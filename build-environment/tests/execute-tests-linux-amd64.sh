@@ -20,7 +20,7 @@ tearDown()
 
 oneTimeSetUp() {
     git clone https://github.com/checkmarx-ltd/cx-flow.git $(pwd)/cxflow
-    $DOCKER_BUILD_PREFIX $BUILD_COMPAT -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
+    $DOCKER_BUILD_PREFIX -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
 }
 
 oneTimeTearDown() {
@@ -33,6 +33,13 @@ testNoArgsShowsHelp() {
     assertTrue 0 "[ $EXEC_RESULT -eq 0 -a $(wc -l output/out.txt | cut -d ' ' -f1) -gt 1 ]"
 }
 
+testNoArgsCxOneShowsHelp() {
+    $DOCKER_RUN_PREFIX test cxone > output/out.txt
+    EXEC_RESULT=$?
+    assertTrue 0 "[ $EXEC_RESULT -eq 0 -a $(wc -l output/out.txt | cut -d ' ' -f1) -gt 1 ]"
+}
+
+
 testHelpSameAsNoArgs() {
     $DOCKER_RUN_PREFIX test > output/noargs_out.txt
     EXEC_RESULT_NOARGS=$?
@@ -43,7 +50,27 @@ testHelpSameAsNoArgs() {
     assertTrue 0 "[ $EXEC_RESULT_NOARGS -eq $EXEC_RESULT_ARGS -a $(wc -l output/noargs_out.txt | cut -d ' ' -f1) -eq $(wc -l output/args_out.txt | cut -d ' ' -f1) ]"
 }
 
-testOfflineScanOfCxFlow () {
+testHelpSameAsScaArgs() {
+    $DOCKER_RUN_PREFIX test > output/noargs_out.txt
+    EXEC_RESULT_NOARGS=$?
+
+    $DOCKER_RUN_PREFIX test sca help > output/args_out.txt
+    EXEC_RESULT_ARGS=$?
+
+    assertTrue 0 "[ $EXEC_RESULT_NOARGS -eq $EXEC_RESULT_ARGS -a $(wc -l output/noargs_out.txt | cut -d ' ' -f1) -eq $(wc -l output/args_out.txt | cut -d ' ' -f1) ]"
+}
+
+testCxOneHelpSameAsNoArgs() {
+    $DOCKER_RUN_PREFIX test cxone > output/noargs_out.txt
+    EXEC_RESULT_NOARGS=$?
+
+    $DOCKER_RUN_PREFIX test cxone help > output/args_out.txt
+    EXEC_RESULT_ARGS=$?
+
+    assertTrue 0 "[ $EXEC_RESULT_NOARGS -eq $EXEC_RESULT_ARGS -a $(wc -l output/noargs_out.txt | cut -d ' ' -f1) -eq $(wc -l output/args_out.txt | cut -d ' ' -f1) ]"
+}
+
+testOfflineResolverScanOfCxFlow () {
 
     cp -r $(pwd)/cxflow/* $INPUT_DIR
 
@@ -56,23 +83,32 @@ testOfflineScanOfCxFlow () {
     assertTrue 0 "[ -e ${OUTPUT_DIR}/results.json ]"
 }
 
-reportMissingVars() {
-    echo Skipping test $1 due to missing environment variables:
+reportMissingScaVars() {
+    echo Skipping test $1 due to missing SCA environment variables:
     [ -z "${TEST_TENANT}" ] && echo TEST_TENANT
     [ -z "${TEST_USER}" ] && echo TEST_USER
     [ -z "${TEST_PASSWORD}" ] && echo TEST_PASSWORD
 }
 
-isMissingVars() {
+isMissingScaVars() {
     [[ -z "${TEST_TENANT}" || -z "${TEST_USER}" || -z "${TEST_PASSWORD}" ]] && return 0 || return 1 
+}
+
+reportMissingCxOneVars() {
+    echo Skipping test $1 due to missing CxOne environment variables:
+    [ -z "${TEST_APIKEY}" ] && echo TEST_APIKEY
+}
+
+isMissingCxOneVars() {
+    [[ -z "${TEST_APIKEY}" ]] && return 0 || return 1 
 }
 
 testTwoStageScanOfCxFlow () {
     
-    if isMissingVars
+    if isMissingScaVars
     then
         startSkipping
-        reportMissingVars "${FUNCNAME[0]}"
+        reportMissingScaVars "${FUNCNAME[0]}"
     else
         cp -r $(pwd)/cxflow/* $INPUT_DIR
 
@@ -103,8 +139,68 @@ testTwoStageScanOfCxFlow () {
     [[ isSkipping -eq "${SHUNIT_TRUE}" ]] && endSkipping
 }
 
+testCxOneScan () {
+    
+    if isMissingCxOneVars
+    then
+        startSkipping
+        reportMissingCxOneVars "${FUNCNAME[0]}"
+    else
+        cp -r $(pwd)/cxflow/* $INPUT_DIR
 
+        $DOCKER_RUN_PREFIX test cxone \
+            scan create \
+            -s /sandbox/input \
+            --project-name $PROJECT_DEFAULT_NAME \
+            --output-path /sandbox/output \
+            --sca-resolver /sandbox/resolver/ScaResolver \
+            --scan-types sast,sca \
+            --report-format json \
+            --output-name .cxsca-results.json \
+            --branch master \
+            --apikey $TEST_APIKEY > /dev/null 2>&1
 
+        rm -rf $INPUT_DIR/*
+    fi
+
+    assertTrue 0 $?
+    
+    [[ isSkipping -eq "${SHUNIT_TRUE}" ]] && endSkipping
+}
+
+testCxOneOfflineScaScan () {
+    
+    if isMissingCxOneVars
+    then
+        startSkipping
+        reportMissingCxOneVars "${FUNCNAME[0]}"
+    else
+        cp -r $(pwd)/cxflow/* $INPUT_DIR
+
+        $DOCKER_RUN_PREFIX test \
+            offline \
+            -s /sandbox/input \
+            -n $PROJECT_DEFAULT_NAME \
+            -r /sandbox/output/.cxsca-results.json > /dev/null 2>&1
+
+        rm -rf $INPUT_DIR
+
+        mv $OUTPUT_DIR $INPUT_DIR
+
+        $DOCKER_RUN_PREFIX test cxone \
+            scan create \
+            -s /sandbox/input \
+            --project-name $PROJECT_DEFAULT_NAME \
+            --scan-types sca \
+            --branch master \
+            --apikey $TEST_APIKEY > /dev/null 2>&1
+
+    fi
+
+    assertTrue 0 $?
+    
+    [[ isSkipping -eq "${SHUNIT_TRUE}" ]] && endSkipping
+}
 
 
 

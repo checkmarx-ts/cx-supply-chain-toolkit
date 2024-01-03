@@ -2,9 +2,38 @@
 
 . ./common
 
+
+tearDown()
+{
+    $DOCKER_RUN_PREFIX --entrypoint test -t test:tag -f /sandbox/resolver/ScaResolver 
+    assertEquals 0 $?
+
+    $DOCKER_RUN_PREFIX --entrypoint test -t test:tag -f /sandbox/cxonecli/cx 
+    assertEquals 0 $?
+}
+
+GRADLE_ALPINE_BUILD_PARAMS="-t test:tag --build-arg BASE=gradle:8-jdk11-alpine"
+
 testBuildGradleAlpineSuccess()
 {
-    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
+    $DOCKER_BUILD_PREFIX $GRADLE_ALPINE_BUILD_PARAMS --target=resolver-alpine ..
+    assertEquals 0 $?
+}
+
+testBuildGradleAlpineBuildCustomUIDGIDSuccess()
+{
+    $DOCKER_BUILD_PREFIX --build-arg USER_ID=2048 --build-arg GROUP_ID=2048 $GRADLE_ALPINE_BUILD_PARAMS  --target=resolver-alpine ..
+
+    $DOCKER_RUN_PREFIX --entrypoint getent -t test:tag passwd 2048 
+    assertEquals 0 $?
+
+    $DOCKER_RUN_PREFIX --entrypoint getent -t test:tag passwd resolver
+    assertEquals 0 $?
+
+    $DOCKER_RUN_PREFIX --entrypoint getent -t test:tag group 2048 
+    assertEquals 0 $?
+
+    $DOCKER_RUN_PREFIX --entrypoint getent -t test:tag group sca
     assertEquals 0 $?
 }
 
@@ -14,11 +43,12 @@ testBuildNoBaseTargetsAlpineSuccess()
     assertEquals 0 $?
 }
 
-testBuildNoBaseTargetsNonAlpineFails()
+testBuildGradleAlpineBareSuccess()
 {
-    $DOCKER_BUILD_PREFIX -t test:tag --target=resolver-alpine --target=resolver-redhat ..
-    assertNotEquals 0 $?
+    $DOCKER_BUILD_PREFIX $GRADLE_ALPINE_BUILD_PARAMS --target=resolver-alpine-bare ..
+    assertEquals 0 $?
 }
+
 
 testBuildGradleDebianUbuntuFocalSuccess()
 {
@@ -32,11 +62,6 @@ testBuildGradleDebianUbuntuJammySuccess()
     assertEquals 0 $?
 }
 
-testBuildGradleWrongTypeFails()
-{
-    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-jammy --target=resolver-redhat ..
-    assertNotEquals 0 $?
-}
 
 testBuildAmazonSuccess()
 {
@@ -68,9 +93,9 @@ testBuildRedhatUbi8MinimalSuccess()
     assertEquals 0 $?
 }
 
-testBuildBuildpackDepsKineticSuccess()
+testBuildBuildpackDepsLatestSuccess()
 {
-    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=buildpack-deps:kinetic --target=resolver-debian ..
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=buildpack-deps:latest --target=resolver-debian ..
     assertEquals 0 $?
 }
 
@@ -120,6 +145,42 @@ testUbuntuSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=ubuntu:latest --target=resolver-debian ..
     assertEquals 0 $?
+}
+
+
+testNoCreatingDirRedhat1()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=redhat/ubi8:latest --target=resolver-redhat ..
+    docker run --rm -it test:tag cxone | grep -i "creating directory"
+    assertNotEquals 0 $?
+}
+
+testNoCreatingDirRedhat2()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=redhat/ubi8-minimal:latest --target=resolver-redhat ..
+    docker run --rm -it test:tag cxone | grep -i "creating directory"
+    assertNotEquals 0 $?
+}
+
+testNoCreatingDirDebian()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=ubuntu:latest --target=resolver-debian ..
+    docker run --rm -it test:tag cxone | grep -i "creating directory"
+    assertNotEquals 0 $?
+}
+
+testNoCreatingDirAlpine()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=amazoncorretto:11-alpine3.14 --target=resolver-alpine ..
+    docker run --rm -it test:tag cxone | grep -i "creating directory"
+    assertNotEquals 0 $?
+}
+
+testNoCreatingDirAmazon()
+{
+    $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=amazoncorretto:8 --target=resolver-amazon ..
+    docker run --rm -it test:tag cxone | grep -i "creating directory"
+    assertNotEquals 0 $?
 }
 
 

@@ -23,7 +23,10 @@ run on a developers desktop without the need for this variable.  The variable ad
 to the \texttt{docker build} command so that it is compatible with the GitHub workflow
 execution environment.  It is currently defined as:
 
-\noindent\\\texttt{----load ----build-arg GROUP\_ID=123 ----build-arg USER\_ID=1001}
+\noindent\\\texttt{----load ----build-arg GROUP\_ID=127 ----build-arg USER\_ID=1001}
+
+\noindent\\The UID/GID used by GitHub-hosted runners may periodically change. If 
+there are build failures, check that the runner's user has the correct UID/GID.
 
 \subsection{Action Secrets}
 

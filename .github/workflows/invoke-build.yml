@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Tag repo ${{ inputs.tag }}
-        uses: richardsimko/update-tag@v1
+        uses: richardsimko/update-tag@e173a8ef8f54ab526a91dad6139a25efed62424c
         with:
           tag_name: ${{ inputs.tag }}
         env:
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - uses: technote-space/workflow-conclusion-action@v3
+      - uses: technote-space/workflow-conclusion-action@45ce8e0eb155657ab8ccf346ade734257fd196a5
       - name: Fetch Code
         uses: actions/checkout@v3
         if: env.WORKFLOW_CONCLUSION == 'failure'
