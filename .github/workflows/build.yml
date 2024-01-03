@@ -134,7 +134,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: release-notes
-          path: release_notes/release-notes.pdf
+          path: release_notes/release_notes.pdf
   
   publish-release:
     runs-on: ubuntu-latest
