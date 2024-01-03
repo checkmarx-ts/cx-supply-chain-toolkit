@@ -28,10 +28,10 @@ jobs:
     steps:
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v2          
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
         with:
           registry: ghcr.io
           username: ${{ secrets.PACKAGE_USER }}
@@ -47,7 +47,7 @@ jobs:
             docker rm $CONTAINER_HASH
           
       - name: Fetch Code @ tag ${{ inputs.tag }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
         with:
           ref: refs/tags/${{ inputs.tag }}
 
@@ -61,7 +61,7 @@ jobs:
           docker save -o enhanced-cxflow-scaresolver-$FULLTAG.tar $DOCKER_REPO:$FULLTAG
           zip enhanced-cxflow-scaresolver-$FULLTAG.tar.zip enhanced-cxflow-scaresolver-$FULLTAG.tar
       - name: Upload image tarball
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
         with:
           name: enhanced-cxflow-scaresolver-tarball
           path: enhanced-cxflow-scaresolver*.zip
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Code @ tag ${{ inputs.tag }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
         with:
           ref: refs/tags/${{ inputs.tag }}
       
@@ -91,12 +91,12 @@ jobs:
           echo \<P\> >> release.md
           echo docker pull $DOCKER_REPO:${{ inputs.tag }} >> release.md
       - name: Upload build-environment zip
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
         with:
           name: build-environment-zip
           path: artifacts/build-environment-${{ inputs.tag }}.zip
       - name: Upload publication notes
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
         with:
           name: release.md
           path: release.md
@@ -105,7 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Code @ tag ${{ inputs.tag }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
         with:
           ref: refs/tags/${{ inputs.tag }}
         
@@ -113,25 +113,25 @@ jobs:
         run: echo ${{ inputs.tag }} > docs/version.tex
 
       - name: Build PDF Manual
-        uses: xu-cheng/latex-action@v2
+        uses: xu-cheng/latex-action@f1ca82cbed861b3534e2997dd584944f55b884ed
         with:
           root_file: docs/_main.tex
           work_in_root_file_dir: true
 
       - name: Upload manual
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
         with:
           name: manual
           path: docs/_main.pdf
   
       - name: Build PDF Release Notes
-        uses: xu-cheng/latex-action@v2
+        uses: xu-cheng/latex-action@f1ca82cbed861b3534e2997dd584944f55b884ed
         with:
           root_file: release_notes/release_notes.tex
           work_in_root_file_dir: true
 
       - name: Upload release notes
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
         with:
           name: release-notes
           path: release_notes/release_notes.pdf
@@ -142,38 +142,38 @@ jobs:
     steps:
 
       - name: Download manual
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110
         with:
           name: manual
 
       - name: Download release notes
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110
         with:
           name: release-notes
 
       - name: Download publication notes
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110
         with:
           name: release.md
 
       - name: Download build-environment zip
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110
         with:
           name: build-environment-zip
 
       - name: Download enhanced-cxflow-scaresolver-tarball
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110
         with:
           name: enhanced-cxflow-scaresolver-tarball
       
       - name: Rename documentation artifacts
         run: |
           mv _main.pdf cx-supply-chain-toolkit-manual-${{ inputs.tag }}.pdf
-          mv release_notes.pdf cx-supply-chain-toolkit-release-notes-${{ inputs.tag }}.pdf
+          mv release_qnotes.pdf cx-supply-chain-toolkit-release-notes-${{ inputs.tag }}.pdf
         
       - name: Create GitHub Release
         id: create_release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@6c75be85e571768fa31b40abf38de58ba0397db5
         with:
           allowUpdates: true
           artifactErrorsFailBuild: true
@@ -189,7 +189,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [publish-release]
     steps:
-      - uses: geekyeggo/delete-artifact@v2
+      - uses: geekyeggo/delete-artifact@9d15d164b1dcd538ff1b1a2984bc2c0240986c3b
         with:
           name: |
             enhanced-cxflow-scaresolver-tarball
