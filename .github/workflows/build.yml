@@ -118,14 +118,11 @@ jobs:
           root_file: docs/_main.tex
           work_in_root_file_dir: true
 
-      - name: Rename PDF Manual
-        run: mv docs/_main.pdf docs/manual-${{ inputs.tag }}.pdf
-
       - name: Upload manual
         uses: actions/upload-artifact@v3
         with:
           name: manual
-          path: docs/manual-${{ inputs.tag }}.pdf
+          path: docs/_main.pdf
   
       - name: Build PDF Release Notes
         uses: xu-cheng/latex-action@v2
@@ -133,14 +130,11 @@ jobs:
           root_file: release_notes/release_notes.tex
           work_in_root_file_dir: true
 
-      - name: Rename PDF Release Notes
-        run: mv release_notes/release_notes.pdf release_notes/release-notes-${{ inputs.tag }}.pdf
-        
       - name: Upload release notes
         uses: actions/upload-artifact@v3
         with:
           name: release-notes
-          path: release_notes/release-notes-${{ inputs.tag }}.pdf
+          path: release_notes/release-notes.pdf
   
   publish-release:
     runs-on: ubuntu-latest
