@@ -179,7 +179,7 @@ RUN ln -s $(which bash) /bin/bsh
 SHELL ["/bin/bsh", "-c"]
 
 RUN groupadd --gid ${GROUP_ID} sca && \
-    adduser -G sca resolver && \
+    adduser -G sca -u ${USER_ID} resolver && \
     usermod -G sca root && \
     HOME_DIR=$(getent passwd ${USER_ID} | cut -d: -f6) && \
     mkdir -p $HOME_DIR/.checkmarx &&  \
