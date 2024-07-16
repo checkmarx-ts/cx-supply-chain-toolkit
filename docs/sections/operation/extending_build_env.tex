@@ -78,8 +78,54 @@ environments.  This has several advantages:
 
 \noindent\\The "build-environment" components can be obtained from the \cxtoolkitpath{releases/latest}{Releases}.
 
+\subsection{Creating Extended Images with \texttt{autobuild.sh}}
 
-\subsection{Creating Extended Images}
+Most users of the \cxtoolkit will find it easiest to use the
+\texttt{autobuild.sh} script provided in the build-environment
+distribution.  The only requirement to build an extended image using
+\texttt{autobuild.sh} is to provide the name of the base container image.
+The \texttt{autobuild.sh} script will then probe the base container to
+determine the correct build target and options.  A container tag
+for the extended container image is then returned to the shell
+via \texttt{stdout}.
+
+Table \ref{table:autobuild_params} describes the command line parameters used
+with the \texttt{autobuild.sh} script.  For more fine-grained control of the
+extended container build, Section \ref{sec:manual_builds} describes how to build
+the container images by invoking container build tools directly.  To use the
+\texttt{autobuild.sh} script, it must be run in an environment that has the docker
+container build tools installed.
+
+
+\begin{table}[h]
+    \caption{Parameters for \texttt{autobuild.sh}}\label{table:autobuild_params}      
+    \begin{tabularx}{\textwidth}{lcl}
+        \toprule
+        \textbf{Parameter} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{-t} & Y & \makecell[l]{The tag for the base container image.}\\
+        \midrule
+        \texttt{-d} & N & \makecell[l]{The directory path for the \cxtoolkit\\
+        build-environment. Defaults to the directory where the \\
+        \texttt{autobuild.sh} script is located.}\\
+        \midrule
+        \texttt{-b} & N & \makecell[l]{Indicates that the created container will be a bare container as\\
+        described in Section \ref{ssec:bare_targets}.}\\
+        \midrule
+        \texttt{-u} & N & \makecell[l]{Assigns the UID of the user running \texttt{autobuild.sh} to the runtime user\\
+        in the extended container.}\\
+        \midrule
+        \texttt{-g} & N & \makecell[l]{Assigns the GID of the user running \texttt{autobuild.sh} to the runtime user\\
+        in the extended container.}\\
+        \midrule
+        \texttt{-v} & N & \makecell[l]{Turns on the verbose docker build progress output for troubleshooting\\
+        purposes.}\\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+
+\subsection{Creating Extended Images with Manual Container Builds}\label{sec:manual_builds}
 
 The build-environment components contains a multi-stage \texttt{Dockerfile} where stage names
 specify the correct variation of Linux\footnote{There is currently no support for Windows base images.}
