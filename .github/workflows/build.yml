@@ -82,6 +82,10 @@ jobs:
           zip -r ../artifacts/build-environment-${{ inputs.tag }}.zip *
           zip -d ../artifacts/build-environment-${{ inputs.tag }}.zip tests/*
           zip -d ../artifacts/build-environment-${{ inputs.tag }}.zip tests
+
+          zip -r ../artifacts/build-environment.zip *
+          zip -d ../artifacts/build-environment.zip tests/*
+          zip -d ../artifacts/build-environment.zip tests
           popd
       - name: Generate publication notes
         run: |
@@ -94,7 +98,7 @@ jobs:
         uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
         with:
           name: build-environment-zip
-          path: artifacts/build-environment-${{ inputs.tag }}.zip
+          path: artifacts/build-environment*.zip
       - name: Upload publication notes
         uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
         with:
