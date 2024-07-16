@@ -19,12 +19,12 @@ tearDown()
 }
 
 oneTimeSetUp() {
-    git clone https://github.com/checkmarx-ltd/cx-flow.git $(pwd)/cxflow
-    $DOCKER_BUILD_PREFIX -t test --build-arg BASE=gradle:8-jdk11-alpine --target=resolver-alpine ..
+    git clone --depth=1 https://github.com/WebGoat/WebGoat.git $(pwd)/webgoat
+    $DOCKER_BUILD_PREFIX -t test --build-arg BASE=cimg/openjdk:17.0 --target=resolver-debian ..
 }
 
 oneTimeTearDown() {
-    [ -d "cxflow" ] && rm -rf cxflow || :
+    [ -d "webgoat" ] && rm -rf webgoat || :
 }
 
 testNoArgsShowsHelp() {
@@ -70,9 +70,9 @@ testCxOneHelpSameAsNoArgs() {
     assertTrue 0 "[ $EXEC_RESULT_NOARGS -eq $EXEC_RESULT_ARGS -a $(wc -l output/noargs_out.txt | cut -d ' ' -f1) -eq $(wc -l output/args_out.txt | cut -d ' ' -f1) ]"
 }
 
-testOfflineResolverScanOfCxFlow () {
+testOfflineResolverScanOfWebgoat () {
 
-    cp -r $(pwd)/cxflow/* $INPUT_DIR
+    cp -r $(pwd)/webgoat/* $INPUT_DIR
 
     $DOCKER_RUN_PREFIX test \
         offline \
@@ -103,14 +103,14 @@ isMissingCxOneVars() {
     [[ -z "${TEST_APIKEY}" ]] && return 0 || return 1 
 }
 
-testTwoStageScanOfCxFlow () {
+testTwoStageScanOfWebgoat () {
     
     if isMissingScaVars
     then
         startSkipping
         reportMissingScaVars "${FUNCNAME[0]}"
     else
-        cp -r $(pwd)/cxflow/* $INPUT_DIR
+        cp -r $(pwd)/webgoat/* $INPUT_DIR
 
         $DOCKER_RUN_PREFIX test \
             offline \
@@ -146,7 +146,7 @@ testCxOneScan () {
         startSkipping
         reportMissingCxOneVars "${FUNCNAME[0]}"
     else
-        cp -r $(pwd)/cxflow/* $INPUT_DIR
+        cp -r $(pwd)/webgoat/* $INPUT_DIR
 
         $DOCKER_RUN_PREFIX test cxone \
             scan create \
@@ -175,7 +175,7 @@ testCxOneOfflineScaScan () {
         startSkipping
         reportMissingCxOneVars "${FUNCNAME[0]}"
     else
-        cp -r $(pwd)/cxflow/* $INPUT_DIR
+        cp -r $(pwd)/webgoat/* $INPUT_DIR
 
         $DOCKER_RUN_PREFIX test \
             offline \
