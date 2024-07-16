@@ -2,17 +2,6 @@
 
 . ./common
 
-
-deleteImages()
-{
-    for img in $(docker image ls -a -q); do
-        docker image rm -f $img
-    done
-    
-    docker system prune -f
-}
-
-
 tearDown()
 {
     $DOCKER_RUN_PREFIX --entrypoint test -t test:tag -f /sandbox/resolver/ScaResolver 
@@ -21,7 +10,8 @@ tearDown()
     $DOCKER_RUN_PREFIX --entrypoint test -t test:tag -f /sandbox/cxonecli/cx 
     assertEquals 0 $?
 
-    deleteImages
+    docker image rm -f test:tag
+
 }
 
 GRADLE_ALPINE_BUILD_PARAMS="-t test:tag --build-arg BASE=gradle:8-jdk11-alpine"
