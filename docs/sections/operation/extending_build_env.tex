@@ -103,19 +103,21 @@ container build tools installed.
         \toprule
         \textbf{Parameter} & \textbf{Required} & \textbf{Description}\\
         \midrule
-        \texttt{-t} & Y & \makecell[l]{The tag for the base container image.}\\
+        \texttt{-a} & N & \makecell[l]{Additional arguments to apply to the \texttt{docker build} command.}\\
+        \midrule
+        \texttt{-b} & N & \makecell[l]{Indicates that the created container will be a bare container as\\
+        described in Section \ref{ssec:bare_targets}.}\\
         \midrule
         \texttt{-d} & N & \makecell[l]{The directory path for the \cxtoolkit\\
         build-environment. Defaults to the directory where the \\
         \texttt{autobuild.sh} script is located.}\\
         \midrule
-        \texttt{-b} & N & \makecell[l]{Indicates that the created container will be a bare container as\\
-        described in Section \ref{ssec:bare_targets}.}\\
-        \midrule
-        \texttt{-u} & N & \makecell[l]{Assigns the UID of the user running \texttt{autobuild.sh} to the runtime user\\
+        \texttt{-g} & N & \makecell[l]{Assigns the GID of the user running \texttt{autobuild.sh} to the runtime user\\
         in the extended container.}\\
         \midrule
-        \texttt{-g} & N & \makecell[l]{Assigns the GID of the user running \texttt{autobuild.sh} to the runtime user\\
+        \texttt{-t} & Y & \makecell[l]{The tag for the base container image.}\\
+        \midrule
+        \texttt{-u} & N & \makecell[l]{Assigns the UID of the user running \texttt{autobuild.sh} to the runtime user\\
         in the extended container.}\\
         \midrule
         \texttt{-v} & N & \makecell[l]{Turns on the verbose docker build progress output for troubleshooting\\
