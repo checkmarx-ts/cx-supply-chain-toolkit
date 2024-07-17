@@ -75,7 +75,7 @@ testBuildBareNoInheritGID()
     TEST_TAG=$($AUTOBUILDER -t $BASE_IMG -b -g)
     assertEquals "Build step failure" 0 $?
 
-    assertEquals $($DOCKER_RUN_PREFIX --entrypoint id -t $TEST_TAG -g | tr -d '\r\n') 0
+    assertEquals 0 $( $DOCKER_RUN_PREFIX --entrypoint id -t "$TEST_TAG" -g | tr -d '\r\n')
 }
 
 testBuildRegularInheritGID()
@@ -83,7 +83,7 @@ testBuildRegularInheritGID()
     TEST_TAG=$($AUTOBUILDER -t $BASE_IMG -g)
     assertEquals "Build step failure" 0 $?
 
-    assertEquals $($DOCKER_RUN_PREFIX --entrypoint id -t $TEST_TAG -g | tr -d '\r\n') $(id -g)
+    assertEquals $(id -g) $( $DOCKER_RUN_PREFIX --entrypoint id -t "$TEST_TAG" -g | tr -d '\r\n')
 }
 
 testBuildBareNoInheritUID()
@@ -91,7 +91,7 @@ testBuildBareNoInheritUID()
     TEST_TAG=$($AUTOBUILDER -t $BASE_IMG -b -u)
     assertEquals "Build step failure" 0 $?
 
-    assertEquals $($DOCKER_RUN_PREFIX --entrypoint id -t $TEST_TAG -u | tr -d '\r\n') 0
+    assertEquals 0 $( $DOCKER_RUN_PREFIX --entrypoint id -t "$TEST_TAG" -u | tr -d '\r\n')
 }
 
 testBuildRegularInheritUID()
@@ -99,7 +99,7 @@ testBuildRegularInheritUID()
     TEST_TAG=$($AUTOBUILDER -t $BASE_IMG -u)
     assertEquals "Build step failure" 0 $?
 
-    assertEquals $($DOCKER_RUN_PREFIX --entrypoint id -t $TEST_TAG -u | tr -d '\r\n') $(id -u)
+    assertEquals $(id -u) $( $DOCKER_RUN_PREFIX --entrypoint id -t "$TEST_TAG" -u | tr -d '\r\n') 
 }
 
 testBuildBareNoInheritUIDOrGID()
@@ -107,8 +107,8 @@ testBuildBareNoInheritUIDOrGID()
     TEST_TAG=$($AUTOBUILDER -t $BASE_IMG -b -u -g)
     assertEquals "Build step failure" 0 $?
 
-    assertEquals $($DOCKER_RUN_PREFIX --entrypoint id -t $TEST_TAG -u | tr -d '\r\n') 0
-    assertEquals $($DOCKER_RUN_PREFIX --entrypoint id -t $TEST_TAG -g | tr -d '\r\n') 0
+    assertEquals 0 $( $DOCKER_RUN_PREFIX --entrypoint id -t "$TEST_TAG" -u | tr -d '\r\n')
+    assertEquals 0 $( $DOCKER_RUN_PREFIX --entrypoint id -t "$TEST_TAG" -g | tr -d '\r\n')
 }
 
 testBuildRegularInheritUIDAndGID()
@@ -116,8 +116,8 @@ testBuildRegularInheritUIDAndGID()
     TEST_TAG=$($AUTOBUILDER -t $BASE_IMG -u -g)
     assertEquals "Build step failure" 0 $?
 
-    assertEquals $($DOCKER_RUN_PREFIX --entrypoint id -t $TEST_TAG -u | tr -d '\r\n') $(id -u)
-    assertEquals $($DOCKER_RUN_PREFIX --entrypoint id -t $TEST_TAG -g | tr -d '\r\n') $(id -g)
+    assertEquals $(id -u) $( $DOCKER_RUN_PREFIX --entrypoint id -t "$TEST_TAG" -u | tr -d '\r\n')
+    assertEquals $(id -g) $( $DOCKER_RUN_PREFIX --entrypoint id -t "$TEST_TAG" -g | tr -d '\r\n')
 }
 
 [ -z $BASE_IMG ] && echo Define BASE_IMG to run the tests && exit 1

@@ -18,7 +18,7 @@ jobs:
           # - "gradle:8-jdk17-graal"
           # - "gradle:8-jdk11-jammy"
           # - "gradle:8-jdk11-focal"
-          # - "ubuntu:latest"
+          - "ubuntu:latest"
           - "amazonlinux:latest"
           - "redhat/ubi9:latest"
           - "redhat/ubi9-minimal:latest"
