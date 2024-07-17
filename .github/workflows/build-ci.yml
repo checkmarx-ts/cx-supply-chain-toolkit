@@ -11,25 +11,25 @@ jobs:
       max-parallel: 3
       matrix:
         base_img:
-          # - "cimg/openjdk:17.0"
-          # - "amazoncorretto:11-alpine3.14"
-          - "gradle:8-jdk11-focal"
-          - "gradle:8-jdk11-jammy"
-          # - "amazonlinux:latest"
-          # - "redhat/ubi9:latest"
-          # - "redhat/ubi9-minimal:latest"
-          # - "redhat/ubi8:latest"
-          # - "redhat/ubi8-minimal:latest"
-          # - "buildpack-deps:latest"
-          # - "buildpack-deps:sid"
-          # - "eclipse-temurin:latest"
-          # - "amazoncorretto:8"
-          # - "amazoncorretto:11"
-          # - "amazoncorretto:8-alpine3.14"
-          # - "amazoncorretto:11-alpine3.14"
-          # - "debian:latest"
-          - "ubuntu:latest"
-    runs-on: ubuntu-24.04
+          - "cimg/openjdk:17.0"
+          - "amazoncorretto:11-alpine3.14"
+          - "gradle:8-jdk11-alpine"
+          - "gradle:8-jdk17-alpine"
+          - "gradle:8-jdk17-graal"
+          - "amazonlinux:latest"
+          - "redhat/ubi9:latest"
+          - "redhat/ubi9-minimal:latest"
+          - "redhat/ubi8:latest"
+          - "redhat/ubi8-minimal:latest"
+          - "buildpack-deps:latest"
+          - "buildpack-deps:sid"
+          - "eclipse-temurin:latest"
+          - "amazoncorretto:8"
+          - "amazoncorretto:11"
+          - "amazoncorretto:8-alpine3.14"
+          - "amazoncorretto:11-alpine3.14"
+          - "debian:latest"
+    runs-on: ubuntu-latest
     steps:
       - name: Fetch Code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
