@@ -27,7 +27,6 @@ jobs:
           - "amazoncorretto:8-alpine3.14"
           - "amazoncorretto:11-alpine3.14"
           - "debian:latest"
-          - "ubuntu:latest"
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Code
