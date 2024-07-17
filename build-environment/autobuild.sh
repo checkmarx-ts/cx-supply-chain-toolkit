@@ -9,13 +9,14 @@ set -e
 ## -u : use current user's UID for the resolver user in the container
 ## -g : use the current user's GID for the resolver user in the container
 ## -v : verbose output
+## -a : additional arguments to apply to "docker build"
 
 ## Outputs the tag of the built container on stdout
 
 TOOLKIT_PATH=$(dirname ${BASH_SOURCE[0]})
 VERBOSITY_ARG="-q"
 
-while getopts "t:d:bugpv" opt; do
+while getopts "t:d:a:bugpv" opt; do
 
   case ${opt} in
 
@@ -29,6 +30,10 @@ while getopts "t:d:bugpv" opt; do
 
     b)
         TARGET_SUFFIX="-bare"
+    ;;
+
+    a)
+        BUILD_ARGS=$(echo ${OPTARG} | tr -d '"')
     ;;
 
     u)
@@ -74,6 +79,6 @@ IDENTIFIER=$(docker run --rm --entrypoint cat $SRC_TAG /etc/os-release | grep -E
 
 set -e
 
-_=$(docker build  $VERBOSITY_ARG -t "$DEST_TAG" $BASE_ARG $GID_ARG $UID_ARG --target $TARGET "$TOOLKIT_PATH")
+_=$(docker build $VERBOSITY_ARG -t "$DEST_TAG" $BASE_ARG $GID_ARG $UID_ARG --target $TARGET $BUILD_ARGS "$TOOLKIT_PATH")
 
 echo $DEST_TAG
