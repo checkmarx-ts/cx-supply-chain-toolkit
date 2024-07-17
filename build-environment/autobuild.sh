@@ -57,7 +57,11 @@ while getopts "t:d:a:bugpv" opt; do
 done
 
 [ "$DEST_TAG" == "" ] && echo "ERROR: tag of container to extend is required" && exit 1 >&2 || :
-_=$(docker pull "$SRC_TAG")
+
+_=$(docker image inspect "$SRC_TAG")
+if [ ! $? -eq 0 ]; then
+    _=$(docker pull "$SRC_TAG")
+fi
 
 set +e
 
@@ -79,6 +83,6 @@ IDENTIFIER=$(docker run --rm --entrypoint cat $SRC_TAG /etc/os-release | grep -E
 
 set -e
 
-_=$(docker build $VERBOSITY_ARG -t "$DEST_TAG" $BASE_ARG $GID_ARG $UID_ARG --target $TARGET $BUILD_ARGS "$TOOLKIT_PATH")
+_=$(docker build --pull $VERBOSITY_ARG -t "$DEST_TAG" $BASE_ARG $GID_ARG $UID_ARG --target $TARGET $BUILD_ARGS "$TOOLKIT_PATH")
 
 echo $DEST_TAG
