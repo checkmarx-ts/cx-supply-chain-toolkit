@@ -61,7 +61,7 @@ jobs:
           docker save -o enhanced-cxflow-scaresolver-$FULLTAG.tar $DOCKER_REPO:$FULLTAG
           zip enhanced-cxflow-scaresolver-$FULLTAG.tar.zip enhanced-cxflow-scaresolver-$FULLTAG.tar
       - name: Upload image tarball
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b
         with:
           name: enhanced-cxflow-scaresolver-tarball
           path: enhanced-cxflow-scaresolver*.zip
@@ -95,12 +95,12 @@ jobs:
           echo \<P\> >> release.md
           echo docker pull $DOCKER_REPO:${{ inputs.tag }} >> release.md
       - name: Upload build-environment zip
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b
         with:
           name: build-environment-zip
           path: artifacts/build-environment*.zip
       - name: Upload publication notes
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b
         with:
           name: release.md
           path: release.md
@@ -123,7 +123,7 @@ jobs:
           work_in_root_file_dir: true
 
       - name: Upload manual
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b
         with:
           name: manual
           path: docs/_main.pdf
@@ -135,7 +135,7 @@ jobs:
           work_in_root_file_dir: true
 
       - name: Upload release notes
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b
         with:
           name: release-notes
           path: release_notes/release_notes.pdf
