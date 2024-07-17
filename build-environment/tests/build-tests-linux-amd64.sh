@@ -4,14 +4,18 @@
 
 tearDown()
 {
-    $DOCKER_RUN_PREFIX --entrypoint test -t test:tag -f /sandbox/resolver/ScaResolver 
-    assertEquals 0 $?
+    docker image inspect test:tag > /dev/null 2>&1
 
-    $DOCKER_RUN_PREFIX --entrypoint test -t test:tag -f /sandbox/cxonecli/cx 
-    assertEquals 0 $?
+    if [ $? -eq 0 ]; then
+        $DOCKER_RUN_PREFIX --entrypoint test -t test:tag -f /sandbox/resolver/ScaResolver 
+        assertEquals 0 $?
 
-    docker image rm -f test:tag
+        $DOCKER_RUN_PREFIX --entrypoint test -t test:tag -f /sandbox/cxonecli/cx 
+        assertEquals 0 $?
 
+        docker image rm -f test:tag
+        docker system prune -f
+    fi
 }
 
 GRADLE_ALPINE_BUILD_PARAMS="-t test:tag --build-arg BASE=gradle:8-jdk11-alpine"
@@ -56,16 +60,12 @@ testBuildGradleDebianUbuntuFocalSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-focal --target=resolver-debian ..
     assertEquals 0 $?
-    
-    
 }
 
 testBuildGradleDebianUbuntuJammySuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=gradle:8-jdk11-jammy --target=resolver-debian ..
     assertEquals 0 $?
-    
-    
 }
 
 
@@ -73,112 +73,84 @@ testBuildAmazonSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=amazonlinux:latest --target=resolver-amazon ..
     assertEquals 0 $?
-    
-    
 }
 
 testBuildRedhatUbi9Success()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=redhat/ubi9:latest --target=resolver-redhat ..
     assertEquals 0 $?
-    
-    
 }
 
 testBuildRedhatUbi9MinimalSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=redhat/ubi9-minimal:latest --target=resolver-redhat ..
     assertEquals 0 $?
-    
-    
 }
 
 testBuildRedhatUbi8Success()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=redhat/ubi8:latest --target=resolver-redhat ..
     assertEquals 0 $?
-    
-    
 }
 
 testBuildRedhatUbi8MinimalSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=redhat/ubi8-minimal:latest --target=resolver-redhat ..
     assertEquals 0 $?
-    
-    
 }
 
 testBuildBuildpackDepsLatestSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=buildpack-deps:latest --target=resolver-debian ..
     assertEquals 0 $?
-    
-    
 }
 
 testBuildBuildpackDepsSidSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=buildpack-deps:sid --target=resolver-debian ..
     assertEquals 0 $?
-    
-    
 }
 
 testBuildEclipseTemurinSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=eclipse-temurin:latest --target=resolver-debian ..
     assertEquals 0 $?
-    
-    
 }
 
 testBuildAmazonCorretto8AmazonLinuxSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=amazoncorretto:8 --target=resolver-amazon ..
     assertEquals 0 $?
-    
-    
 }
 
 testBuildAmazonCorretto11AmazonLinuxSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=amazoncorretto:11 --target=resolver-amazon ..
     assertEquals 0 $?
-    
-    
 }
 
 testBuildAmazonCorretto8AlpineSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=amazoncorretto:8-alpine3.14 --target=resolver-alpine ..
     assertEquals 0 $?
-    
-    
 }
 
 testBuildAmazonCorretto11AlpineSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=amazoncorretto:11-alpine3.14 --target=resolver-alpine ..
     assertEquals 0 $?
-    
-    
 }
 
 testPureDebianSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=debian:latest --target=resolver-debian ..
     assertEquals 0 $?
-    
-    
 }
 
 testUbuntuSuccess()
 {
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=ubuntu:latest --target=resolver-debian ..
     assertEquals 0 $?
-    
-    
 }
 
 
@@ -187,8 +159,6 @@ testNoCreatingDirRedhat1()
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=redhat/ubi8:latest --target=resolver-redhat ..
     docker run --rm -it test:tag cxone | grep -i "creating directory"
     assertNotEquals 0 $?
-    
-    
 }
 
 testNoCreatingDirRedhat2()
@@ -196,8 +166,6 @@ testNoCreatingDirRedhat2()
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=redhat/ubi8-minimal:latest --target=resolver-redhat ..
     docker run --rm -it test:tag cxone | grep -i "creating directory"
     assertNotEquals 0 $?
-    
-    
 }
 
 testNoCreatingDirDebian()
@@ -205,8 +173,6 @@ testNoCreatingDirDebian()
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=ubuntu:latest --target=resolver-debian ..
     docker run --rm -it test:tag cxone | grep -i "creating directory"
     assertNotEquals 0 $?
-    
-    
 }
 
 testNoCreatingDirAlpine()
@@ -214,8 +180,6 @@ testNoCreatingDirAlpine()
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=amazoncorretto:11-alpine3.14 --target=resolver-alpine ..
     docker run --rm -it test:tag cxone | grep -i "creating directory"
     assertNotEquals 0 $?
-    
-    
 }
 
 testNoCreatingDirAmazon()
@@ -223,8 +187,6 @@ testNoCreatingDirAmazon()
     $DOCKER_BUILD_PREFIX -t test:tag --build-arg BASE=amazoncorretto:8 --target=resolver-amazon ..
     docker run --rm -it test:tag cxone | grep -i "creating directory"
     assertNotEquals 0 $?
-    
-    
 }
 
 
