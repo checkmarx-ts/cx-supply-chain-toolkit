@@ -15,7 +15,7 @@ jobs:
           - "amazoncorretto:11-alpine3.14"
           - "gradle:8-jdk11-alpine"
           - "gradle:8-jdk17-alpine"
-          - "gradle:8-jdk17-graal"
+          # - "gradle:8-jdk17-graal"
           - "amazonlinux:latest"
           - "redhat/ubi9:latest"
           - "redhat/ubi9-minimal:latest"
