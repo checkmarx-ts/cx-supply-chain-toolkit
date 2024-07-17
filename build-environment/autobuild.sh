@@ -57,11 +57,7 @@ while getopts "t:d:a:bugpv" opt; do
 done
 
 [ "$DEST_TAG" == "" ] && echo "ERROR: tag of container to extend is required" && exit 1 >&2 || :
-
-_=$(docker image inspect "$SRC_TAG")
-if [ ! $? -eq 0 ]; then
-    _=$(docker pull "$SRC_TAG")
-fi
+_=$(docker pull "$SRC_TAG")
 
 set +e
 
