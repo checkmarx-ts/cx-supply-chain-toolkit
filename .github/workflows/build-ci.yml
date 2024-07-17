@@ -25,7 +25,7 @@ jobs:
   image-build-unit-tests:
     strategy:
       matrix:
-        base_img: [cimg/openjdk:17.0, amazoncorretto:11-alpine3.14]
+        base_img: ["cimg/openjdk:17.0", "amazoncorretto:11-alpine3.14"]
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Code
