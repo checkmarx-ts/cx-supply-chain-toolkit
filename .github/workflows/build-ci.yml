@@ -47,7 +47,7 @@ jobs:
           cd ${{ github.workspace }}/build-environment/tests
           BASE_IMG=${{ matrix.base_img }} ./autobuild-tests.sh
 
-  image-build-tests:
+  image-build-tests-completed:
     needs: [image-build-test-matrix]
     runs-on: ubuntu-latest
     steps:
