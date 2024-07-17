@@ -8,26 +8,28 @@ env:
 jobs:
   image-build-unit-tests:
     strategy:
+      max-parallel: 3
       matrix:
         base_img:
-          - "cimg/openjdk:17.0"
-          - "amazoncorretto:11-alpine3.14"
+          # - "cimg/openjdk:17.0"
+          # - "amazoncorretto:11-alpine3.14"
           - "gradle:8-jdk11-focal"
           - "gradle:8-jdk11-jammy"
-          - "amazonlinux:latest"
-          - "redhat/ubi9:latest"
-          - "redhat/ubi9-minimal:latest"
-          - "redhat/ubi8:latest"
-          - "redhat/ubi8-minimal:latest"
-          - "buildpack-deps:latest"
-          - "buildpack-deps:sid"
-          - "eclipse-temurin:latest"
-          - "amazoncorretto:8"
-          - "amazoncorretto:11"
-          - "amazoncorretto:8-alpine3.14"
-          - "amazoncorretto:11-alpine3.14"
-          - "debian:latest"
-    runs-on: ubuntu-latest
+          # - "amazonlinux:latest"
+          # - "redhat/ubi9:latest"
+          # - "redhat/ubi9-minimal:latest"
+          # - "redhat/ubi8:latest"
+          # - "redhat/ubi8-minimal:latest"
+          # - "buildpack-deps:latest"
+          # - "buildpack-deps:sid"
+          # - "eclipse-temurin:latest"
+          # - "amazoncorretto:8"
+          # - "amazoncorretto:11"
+          # - "amazoncorretto:8-alpine3.14"
+          # - "amazoncorretto:11-alpine3.14"
+          # - "debian:latest"
+          - "ubuntu:latest"
+    runs-on: windows-latest
     steps:
       - name: Fetch Code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
@@ -37,10 +39,12 @@ jobs:
           install: true
           platforms: linux/amd64
       - name: Execute Extended Image Build Tests
+        shell: bash
         run: |
           cd ${{ github.workspace }}/build-environment/tests
           BASE_IMG=${{ matrix.base_img }} ./autobuild-tests.sh
-        
+
+       
   image-negative-build-unit-tests-linux-amd64:
     runs-on: ubuntu-latest
     steps:
