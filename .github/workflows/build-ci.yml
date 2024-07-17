@@ -6,7 +6,7 @@ env:
   BUILD_COMPAT: ${{ vars.WORKFLOW_BUILD_COMPAT }}
 
 jobs:
-  image-build-unit-tests:
+  image-build-test-matrix:
     strategy:
       max-parallel: 3
       matrix:
@@ -47,6 +47,13 @@ jobs:
           cd ${{ github.workspace }}/build-environment/tests
           BASE_IMG=${{ matrix.base_img }} ./autobuild-tests.sh
 
+  image-build-tests:
+    needs: [image-build-test-matrix]
+    runs-on: ubuntu-latest
+    steps:
+      - name: NOP on Success
+        run: |
+          :
        
   image-negative-build-unit-tests-linux-amd64:
     runs-on: ubuntu-latest
