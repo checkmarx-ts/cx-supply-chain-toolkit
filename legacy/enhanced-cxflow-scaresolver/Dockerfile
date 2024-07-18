@@ -39,8 +39,8 @@ COPY --from=checkmarx/cx-flow:latest /app/cx-flow.jar /stage/
 
 RUN unzip -d /stage /stage/cx-flow.jar META-INF/build-info.properties && \
     CXFLOW_VERSION=$(cat /stage/META-INF/build-info.properties | grep build.version | cut -d '=' -f2) && \
-    wget -P /app https://github.com/checkmarx-ltd/cx-flow/releases/download/$CXFLOW_VERSION/cx-flow-$CXFLOW_VERSION-java11.jar && \
-    mv /app/cx-flow-$CXFLOW_VERSION-java11.jar /app/cx-flow.jar && \
+    wget -P /app https://github.com/checkmarx-ltd/cx-flow/releases/download/$CXFLOW_VERSION/cx-flow-$CXFLOW_VERSION.jar && \
+    mv /app/cx-flow-$CXFLOW_VERSION.jar /app/cx-flow.jar && \
     rm -rf /stage
 
 COPY --chown=root:cxflow scripts/* /app/

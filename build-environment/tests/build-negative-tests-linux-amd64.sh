@@ -5,7 +5,7 @@
 
 testBuildNoBaseTargetsNonAlpineFails()
 {
-    $DOCKER_BUILD_PREFIX -t test:tag --target=resolver-alpine --target=resolver-redhat ..
+    $DOCKER_BUILD_PREFIX -t test:tag --target=resolver-redhat ..
     assertNotEquals 0 $?
 }
 

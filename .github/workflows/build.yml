@@ -1,5 +1,9 @@
 on: 
     workflow_call:
+      outputs:
+        success:
+          description: set to true if the workflow has completed
+          value: ${{ jobs.set-output.outputs.success_value }}
       inputs:
         tag:
           description: 'The version tag to use for stamping build artifacts and naming generated archives'
@@ -47,7 +51,7 @@ jobs:
             docker rm $CONTAINER_HASH
           
       - name: Fetch Code @ tag ${{ inputs.tag }}
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           ref: refs/tags/${{ inputs.tag }}
 
@@ -61,17 +65,16 @@ jobs:
           docker save -o enhanced-cxflow-scaresolver-$FULLTAG.tar $DOCKER_REPO:$FULLTAG
           zip enhanced-cxflow-scaresolver-$FULLTAG.tar.zip enhanced-cxflow-scaresolver-$FULLTAG.tar
       - name: Upload image tarball
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b
         with:
           name: enhanced-cxflow-scaresolver-tarball
           path: enhanced-cxflow-scaresolver*.zip
   
-
   compile-build-environment-release-zip:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Code @ tag ${{ inputs.tag }}
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           ref: refs/tags/${{ inputs.tag }}
       
@@ -82,6 +85,10 @@ jobs:
           zip -r ../artifacts/build-environment-${{ inputs.tag }}.zip *
           zip -d ../artifacts/build-environment-${{ inputs.tag }}.zip tests/*
           zip -d ../artifacts/build-environment-${{ inputs.tag }}.zip tests
+
+          zip -r ../artifacts/build-environment.zip *
+          zip -d ../artifacts/build-environment.zip tests/*
+          zip -d ../artifacts/build-environment.zip tests
           popd
       - name: Generate publication notes
         run: |
@@ -91,12 +98,12 @@ jobs:
           echo \<P\> >> release.md
           echo docker pull $DOCKER_REPO:${{ inputs.tag }} >> release.md
       - name: Upload build-environment zip
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b
         with:
           name: build-environment-zip
-          path: artifacts/build-environment-${{ inputs.tag }}.zip
+          path: artifacts/build-environment*.zip
       - name: Upload publication notes
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b
         with:
           name: release.md
           path: release.md
@@ -105,7 +112,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Code @ tag ${{ inputs.tag }}
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           ref: refs/tags/${{ inputs.tag }}
         
@@ -119,7 +126,7 @@ jobs:
           work_in_root_file_dir: true
 
       - name: Upload manual
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b
         with:
           name: manual
           path: docs/_main.pdf
@@ -131,7 +138,7 @@ jobs:
           work_in_root_file_dir: true
 
       - name: Upload release notes
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b
         with:
           name: release-notes
           path: release_notes/release_notes.pdf
@@ -142,27 +149,27 @@ jobs:
     steps:
 
       - name: Download manual
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
           name: manual
 
       - name: Download release notes
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
           name: release-notes
 
       - name: Download publication notes
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
           name: release.md
 
       - name: Download build-environment zip
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
           name: build-environment-zip
 
       - name: Download enhanced-cxflow-scaresolver-tarball
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
           name: enhanced-cxflow-scaresolver-tarball
       
@@ -173,7 +180,7 @@ jobs:
         
       - name: Create GitHub Release
         id: create_release
-        uses: ncipollo/release-action@6c75be85e571768fa31b40abf38de58ba0397db5
+        uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5
         with:
           allowUpdates: true
           artifactErrorsFailBuild: true
@@ -189,7 +196,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [publish-release]
     steps:
-      - uses: geekyeggo/delete-artifact@9d15d164b1dcd538ff1b1a2984bc2c0240986c3b
+      - uses: geekyeggo/delete-artifact@24928e75e6e6590170563b8ddae9fac674508aa1
         with:
           name: |
             enhanced-cxflow-scaresolver-tarball
@@ -197,5 +204,17 @@ jobs:
             release.md
             release-notes
             manual
+
+
+  set-output:
+    runs-on: ubuntu-latest
+    needs: [artifact-cleanup]
+    outputs:
+      success_value: ${{ steps.complete.outputs.success }}
+    steps:
+      - name: Set Output
+        id: complete
+        run: echo "success=true" >> "$GITHUB_OUTPUT"
+      
 
          

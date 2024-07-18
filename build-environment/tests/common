@@ -10,7 +10,7 @@ fi
 INPUT_DIR=$(pwd)/input
 OUTPUT_DIR=$(pwd)/output
 
-DOCKER_BUILD_PREFIX="docker build --progress plain $BUILD_COMPAT"
+DOCKER_BUILD_PREFIX="docker build --progress plain --build-arg GROUP_ID=$(id -g) --build-arg USER_ID=$(id -u) $BUILD_COMPAT"
 DOCKER_RUN_PREFIX="docker run --rm -v $INPUT_DIR:/sandbox/input -v $OUTPUT_DIR:/sandbox/output -v $OUTPUT_DIR:/sandbox/scalogs"
 
 set +e
