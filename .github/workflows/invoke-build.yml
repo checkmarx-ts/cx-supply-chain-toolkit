@@ -43,7 +43,6 @@ jobs:
     env:
       BUILD_SUCCESS: ${{ needs.publish-release.outputs.success }}
     steps:
-      # - uses: technote-space/workflow-conclusion-action@95f9a08c3e6565ffb9134e90fd181697681cb55b
       - name: Fetch Code
         uses: actions/checkout@v3
         if: env.BUILD_SUCCESS != 'true'

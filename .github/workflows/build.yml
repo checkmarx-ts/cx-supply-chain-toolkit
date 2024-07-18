@@ -80,7 +80,6 @@ jobs:
       
       - name: Create Zip
         run: |
-          exit 1
           mkdir artifacts
           pushd build-environment
           zip -r ../artifacts/build-environment-${{ inputs.tag }}.zip *
@@ -181,7 +180,7 @@ jobs:
         
       - name: Create GitHub Release
         id: create_release
-        uses: ncipollo/release-action@6c75be85e571768fa31b40abf38de58ba0397db5
+        uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5
         with:
           allowUpdates: true
           artifactErrorsFailBuild: true
