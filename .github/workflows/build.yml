@@ -3,7 +3,7 @@ on:
       outputs:
         success:
           description: set to true if the workflow has completed
-          value: ${{ jobs.artifact-cleanup.outputs.success_value }}
+          value: ${{ jobs.set-output.outputs.success_value }}
       inputs:
         tag:
           description: 'The version tag to use for stamping build artifacts and naming generated archives'
@@ -70,12 +70,6 @@ jobs:
           name: enhanced-cxflow-scaresolver-tarball
           path: enhanced-cxflow-scaresolver*.zip
   
-  simulate-failure:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fail
-        run: exit 1
-        
   compile-build-environment-release-zip:
     runs-on: ubuntu-latest
     steps:
@@ -86,6 +80,7 @@ jobs:
       
       - name: Create Zip
         run: |
+          exit 1
           mkdir artifacts
           pushd build-environment
           zip -r ../artifacts/build-environment-${{ inputs.tag }}.zip *
@@ -213,6 +208,14 @@ jobs:
             release.md
             release-notes
             manual
+
+
+  set-output:
+    runs-on: ubuntu-latest
+    needs: [artifact-cleanup]
+    outputs:
+      success_value: ${{ steps.complete.outputs.success }}
+    steps:
       - name: Set Output
         id: complete
         run: echo "success=true" >> "$GITHUB_OUTPUT"
