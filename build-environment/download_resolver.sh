@@ -1,8 +1,16 @@
 #!/bin/bash
 
+## This script attempts to determine the running platform and download
+## the SCA Resolver executable appropriate for that platform.
+##
+## One argument is supplied to the script to indicate the root
+## path where SCA Resolver will be downloaded and the archive expanded.
+##
+## The script outputs the root of where SCA Resolver was extracted
+## to stdout on successful download.
 
 if [ "$1" == "" ]; then
-    >&2 echo Arg1 is missing, please supply temp root.
+    >&2 echo Arg1 is missing, please supply download root path.
     exit 255
 fi
 

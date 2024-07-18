@@ -25,19 +25,50 @@ the results to \cxone for final analysis that reports any potentially vulnerable
 build environment.
 
 
-\section{Deploying on a Build Agent}
+\section{SCA Resolver Deployment on the Build Agent}
 
 When builds are executed on a specific build agent (a.k.a. "The Build Box"),
 the invocation of \scaresolver will typically be scripted to execute
-within a pipeline stage.  In this scenario, the \scaresolver should be
-installed on all build agents that will run pipelines that have scripted
-a supply chain scan invocation.  This is the most simple scenario and applies
+within a pipeline stage via a scripted command.  In this scenario,
+\scaresolver can be installed as a static installation on the build
+agent or can be downloaded and executed on-demand.
+
+\subsection{Static Installation}
+
+Build systems such as Jenkins, Bamboo, Team City, and others are 
+often installed on-premise and each build agent is configured with the
+tools required to correctly perform a build.  Many cloud-based SCMs
+have the concept of "Runners" that are installed on-premise and execute
+commands delegated from the cloud SCM. In these scenarios, 
+the \scaresolver can be installed on all build agents that will execute 
+pipelines that have scripted invocation of \scaresolver.  This applies
 when using \scaresolver with \cxsca or \cxone.
 
 Note that in this scenario, updates to \scaresolver will need to be
 periodically installed.  There are likely several tools on the build agent
 that need periodic update; \scaresolver will simply be one additional
 tool that requires occasional update.
+
+\subsection{Dynamic Download and Execution}
+
+If the static installation of \scaresolver on a build agent is not
+feasible, downloading \scaresolver and executing it on demand is
+an alternative.  One major advantage of using this scenario is that
+the pipeline always executes the latest version of \scaresolver.
+
+One challenge with automating the download of \scaresolver may be in
+determining which \scaresolver executable is compatible with the
+OS running currently executing the pipeline.  If the platform is always
+the same, downloading \scaresolver from the static URL for
+the appropriate executable is all that is required.
+
+If the pipeline execution platform can't be known until the pipeline
+is executed, the script\\\texttt{download\_resolver.sh} is included
+as part of the build-environment.  The \texttt{download\_resolver.sh}
+script requires a single parameter of the root path where the
+downloaded SCA Resolver archive will be extracted.  Upon successful
+completion of the download, the script will return the path to the root
+of the location where SCA Resolver has been extracted.
 
 \section{Modifying a Containerized Build Environment}
 
