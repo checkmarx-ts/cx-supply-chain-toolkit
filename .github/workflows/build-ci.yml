@@ -32,7 +32,7 @@ jobs:
           - "amazoncorretto:8-alpine3.14"
           - "amazoncorretto:11-alpine3.14"
           - "debian:latest"
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     steps:
       - name: Fetch Code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
@@ -49,14 +49,14 @@ jobs:
 
   image-build-tests-completed:
     needs: [image-build-test-matrix]
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     steps:
       - name: NOP on Success
         run: |
           :
        
   image-negative-build-unit-tests-linux-amd64:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     steps:
       - name: Fetch Code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
@@ -71,7 +71,7 @@ jobs:
           ./build-negative-tests-linux-amd64.sh
 
   execution-unit-tests-linux-amd64:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     steps:
       - name: Fetch Code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
@@ -92,7 +92,7 @@ jobs:
           ./execute-tests-linux-amd64.sh
     
   dispatcher-unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     steps:
       - name: Fetch Code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
@@ -102,7 +102,7 @@ jobs:
         run: python -m unittest discover -v -p test_*.py -s ${{ github.workspace }}/legacy/enhanced-cxflow-scaresolver/dispatcher
 
   docs-manual-build:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     steps:
       - name: Fetch Code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
@@ -113,7 +113,7 @@ jobs:
           work_in_root_file_dir: true
 
   docs-release-notes-build:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     steps:
       - name: Fetch Code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
