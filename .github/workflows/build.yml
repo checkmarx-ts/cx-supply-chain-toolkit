@@ -28,7 +28,7 @@ env:
                 
 jobs:
   publish-enhanced-cxflow:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     steps:
       - name: Set up Docker Buildx
         id: buildx
@@ -71,7 +71,7 @@ jobs:
           path: enhanced-cxflow-scaresolver*.zip
   
   compile-build-environment-release-zip:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     steps:
       - name: Fetch Code @ tag ${{ inputs.tag }}
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
@@ -109,7 +109,7 @@ jobs:
           path: release.md
   
   compile-manual:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     steps:
       - name: Fetch Code @ tag ${{ inputs.tag }}
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
@@ -144,7 +144,7 @@ jobs:
           path: release_notes/release_notes.pdf
   
   publish-release:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     needs: [compile-manual, compile-build-environment-release-zip, publish-enhanced-cxflow]
     steps:
 
@@ -193,7 +193,7 @@ jobs:
           tag: ${{ inputs.tag }}
 
   artifact-cleanup:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     needs: [publish-release]
     steps:
       - uses: geekyeggo/delete-artifact@24928e75e6e6590170563b8ddae9fac674508aa1
@@ -207,7 +207,7 @@ jobs:
 
 
   set-output:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     needs: [artifact-cleanup]
     outputs:
       success_value: ${{ steps.complete.outputs.success }}
