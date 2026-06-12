@@ -1,4 +1,4 @@
-FROM amazoncorretto:11-al2023-jdk
+FROM amazoncorretto:11-al2023-jdk@sha256:ffd2c9bf16a8ffeaade21ade59c5d1d1865d770d47681e00613c626d023dbd54
 LABEL org.opencontainers.image.source https://github.com/checkmarx-ts/cx-supply-chain-toolkit
 
 

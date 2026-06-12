@@ -1,4 +1,4 @@
-ARG BASE=alpine:latest
+ARG BASE=alpine:latest@sha256:a2d49ea686c2adfe3c992e47dc3b5e7fa6e6b5055609400dc2acaeb241c829f4
 
 ##########################################################################
 FROM ${BASE} AS base-config
@@ -29,7 +29,7 @@ WORKDIR /sandbox/input_sandbox
 
 
 ##########################################################################
-FROM alpine:latest AS extracted-musl
+FROM alpine:latest@sha256:a2d49ea686c2adfe3c992e47dc3b5e7fa6e6b5055609400dc2acaeb241c829f4 AS extracted-musl
 ARG CONFIG_DIR=default-config
 WORKDIR /sandbox/resolver
 ADD  https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-musl64.tar.gz /sandbox/resolver
@@ -40,7 +40,7 @@ RUN chmod -R 750 /sandbox/resolver
 
 
 ##########################################################################
-FROM alpine:latest AS extracted-linux
+FROM alpine:latest@sha256:a2d49ea686c2adfe3c992e47dc3b5e7fa6e6b5055609400dc2acaeb241c829f4 AS extracted-linux
 ARG CONFIG_DIR=default-config
 WORKDIR /sandbox/resolver
 ADD https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-linux64.tar.gz /sandbox/resolver
@@ -51,7 +51,7 @@ RUN chmod -R 750 /sandbox/resolver
 
 
 ##########################################################################
-FROM alpine:latest AS cxone-extracted-linux
+FROM alpine:latest@sha256:a2d49ea686c2adfe3c992e47dc3b5e7fa6e6b5055609400dc2acaeb241c829f4 AS cxone-extracted-linux
 WORKDIR /sandbox/cxonecli
 ADD https://github.com/Checkmarx/ast-cli/releases/latest/download/ast-cli_linux_x64.tar.gz /sandbox/cxonecli
 RUN tar -xzf ast-cli_linux_x64.tar.gz && \
